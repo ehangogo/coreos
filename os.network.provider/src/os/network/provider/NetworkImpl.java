@@ -24,10 +24,12 @@ import os.core.model.HostInfo;
 import os.core.model.ServiceInfo;
 import os.core.tools.HostUtil;
 import os.network.api.Network;
+import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 
 /**
  * 网卡模块
  */
+@RequireWebServerExtender
 @Component(name = "os.network",property={"service.exported.interfaces=*"},immediate=true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class NetworkImpl implements Network{

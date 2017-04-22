@@ -41,17 +41,3 @@ test-cases: 			${classes;NAMED;*Test}
             name                =       Release ; \
             pretty              =       true ; \
             local               =       ${build}/release
-            
-            
--plugin.10.Other:  \
-\
-        aQute.bnd.deployer.repository.wrapper.Plugin; \
-            location            =	"${build}/cache/wrapper"; \
-            reindex				=	true, \
-\
-        aQute.bnd.jpm.Repository; \
-	        includeStaged   	=       true; \
-	        name                =       Other; \
-	        location            =       ${build}/other; \
-	        index               =       ${build}/other.json
-            

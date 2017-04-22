@@ -13,7 +13,7 @@ import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 @RequireWebServerExtender
 @RequireConfigurerExtender
 @Component(name="os.debug")
-public class DebugApplication implements REST  {
+public class DebugApplication implements REST {
 
 	public String getUpper(String string) {
 		return string.toUpperCase();

@@ -185,7 +185,6 @@ $.fn.table=function(data,header,options){
 	
 	// 导出配置
 	var exportOptions={
-        	columns: ['[data-print!=false]'],
 		    format: {
 		        header: function (data, columnIdx) {
 		            index_num = 0;
@@ -341,3 +340,40 @@ $.fn.sortable=function(options){
 		Sortable.create(obj,options)
 	})
 }
+
+// 封装localstorage
+window.StoreDB=function(key){this.key=key;}
+StoreDB.prototype={
+	// 集合存储  key:[]
+	add:function(ele){
+		var list=this.list();
+		if(list.indexOf(ele)<0){
+			list.push(ele);
+			localStorage.setItem(this.key,list.join(','));
+		}
+	},
+	remove:function(ele){
+		var list=this.list();
+		var index=list.indexOf(ele);
+		if(index>=0){
+			list.splice(index,1);
+			localStorage.setItem(this.key,list.join(','));
+		}
+	},
+	list:function(){
+		var list=localStorage.getItem(this.key);
+		return list?list.split(','):[];
+	},
+	clear:function(){
+		localStorage.setItem(this.key,'');
+	},
+	// 单值存储 key:val
+	set:function(ele){
+		localStorage.setItem(this.key,ele);
+	},
+	get:function(){
+		return localStorage.getItem(this.key);
+	}
+}
+	
+

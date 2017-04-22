@@ -7,6 +7,8 @@ import javax.servlet.http.HttpSession;
 
 import os.core.api.CoreOS;
 import os.core.tools.StringUtil;
+import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
+@RequireWebServerExtender
 @SuppressWarnings({"rawtypes","unchecked"})
 public abstract class BaseCtrl {
 	

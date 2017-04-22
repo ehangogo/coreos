@@ -103,6 +103,13 @@
 					socket.onmessage=function(event){
 						info(event.data);
 					}
+					socket.onclose = function(evt) { 
+			            console.info(event);
+			        }
+					socket.onerror = function(evt) { 
+						console.info(evt);
+						info('$>> connect '+addr+' error\r\n$>> ');
+			        }
 					return socket;
 				}
 				
@@ -122,13 +129,10 @@
 							},50);
 				    	 }else{
 				    	 	if(cmd.match(/(^telnet)/g)){
-				    	 		clear();
 				    	 		var ip=cmd.split(/\s+/g)[1];
 				    	 		var port=cmd.split(/\s+/g)[2];
 				    	 		connect(ip+':'+port);
-			    	 			var socket=getCur();
-					    	 	if(socket==null) return;
-				    	 		socket.send(cmd);	
+				    	 		clear();
 				    	 	}else{
 					    	 	var socket=getCur();
 					    	 	if(socket==null){

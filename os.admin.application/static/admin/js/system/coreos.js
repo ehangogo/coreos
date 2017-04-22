@@ -22,8 +22,8 @@
 	function infos(){
 		// 系统信息
 		$.adminRPC('admin/infos').done(function(nodes){
-			$('#nodes-container').html('');
-			$('#coreos_info').tmpl(bundles_translate(nodes)).appendTo($('#nodes-container'));
+			$('#nodes-container .node[data-type="normal"]').remove();
+			$('#coreos_info').tmpl(bundles_translate(nodes)).prependTo($('#nodes-container'));
 			coreos_bind();
 		});
 	}
@@ -35,8 +35,8 @@
 		param.method=action;
 		// 系统信息
 		$.adminRPC('admin/execute',param).done(function(nodes){
-			$('#nodes-container').html('');
-			$('#coreos_info').tmpl(bundles_translate(nodes)).appendTo($('#nodes-container'));
+			$('#nodes-container .node[data-type="normal"]').remove();
+			$('#coreos_info').tmpl(bundles_translate(nodes)).prependTo($('#nodes-container'));
 			coreos_bind();
 		});
 	}
@@ -171,7 +171,7 @@
 		});
 		
 		// 双击打开命令行接口
-		$('.node').on('dblclick', function(){
+		$('.node').off('dblclick').on('dblclick', function(){ 
 			var node=$(this).find('.coreos').data('node');
 			coreos_cmd('cmd',node);
 		});
@@ -296,7 +296,11 @@
 		// 主机端口号减去1000为telnet端口
 		var ip=node.split(':')[0];
 		var port=node.split(':')[1];
-		port=port-1000;
+		if(port<=1000){
+			port=port-0+1000;
+		}else{
+			port=port-1000;
+		}
 		node=ip+':'+port;
 		
 		layer.open({
@@ -375,6 +379,8 @@
 				}
 				
 			}
+			nodes[i].type='normal';
+			nodes[i].color='blue';
 			nodes[i].bundles=filter;
 			nodes[i].bundles.sort(function(obj1,obj2){
 				return order[obj1.name]-order[obj2.name];
@@ -453,4 +459,148 @@
 		return bundle;
 	}
     
+
+
+	// 主机探测
+	var nodes=[];
+	var count=0;
+	var timer=null;
+	
+	// 存储
+	var store_ky=new StoreDB('ping_key');
+	var store_ls=new StoreDB('ping_list');
+	
+	
+	function ping_list(){
+		
+		// 探测主机列表
+		var ping_nodes=store_ls.list();
+		$('#ping-chooser').html('');
+		$('#ping_nodes').tmpl({ping_nodes:ping_nodes}).appendTo($('#ping-chooser'));
+		
+		// 探测网段
+		$('#new-node').val(store_ky.get());
+				
+	}
+	
+	// 初始化
+	ping_list(); 
+	
+	$('#add-new-node').on('click',function(){
+		
+		nodes=[];
+		count=0;
+		timer=null;
+		
+		var addr=$('#new-node').val();
+		if(!addr){return;}
+		
+		var ip=addr.split(':')[0];
+		var port=addr.split(':')[1];
+	
+		// 符合规则的IP
+		var ips=[];
+		if(ip.indexOf('.'>-1)){
+			var last=ip.split('.')[3];
+			if(last==='*'){
+				for(var i=0;i<255;i++){
+					ips.push(ip.replace(last,i));
+				}
+			}else if(last.indexOf('~')>-1){
+				var start=last.split('~')[0];
+				var end=last.split('~')[1];
+				for(var i=start;i<=end;i++){
+					ips.push(ip.replace(last,i));
+				}
+			}else{
+				ips.push(ip);
+			}
+		}else{
+			ips.push(ip);
+		}
+		
+		// 符合规则的PORT
+		var ports=[];
+		if(port.indexOf('~')>-1){
+			var start=port.split('~')[0];
+			var end=port.split('~')[1];
+			if(start>end){
+				alert('端口返回错误');
+				return;
+			}
+			for(var i=start;i<=end;i++){
+				ports.push(i);
+			}
+		}else{
+			ports.push(port);
+		}
+		
+		// 符合规则的IP:PROT串
+		var addrs=[];
+		for(var i in ips){
+			for(var j in ports){
+				addrs.push(ips[i]+':'+ports[j]);
+			}
+		}
+		
+		var exits_nodes=[];
+		$('.coreos').each(function(){
+			var addr=$(this).data('node');
+			exits_nodes.push(addr);
+		});
+		
+		// 探测
+		for(var i in addrs){
+			count++;
+			ping(addrs[i],nodes);
+		}
+		
+		// 保存结果
+		timer=setInterval(function(){
+			if(count<=0){
+				clearInterval(timer);
+				if(nodes.length>0){
+					store_ky.set(addr);
+					for(var i in nodes){
+						store_ls.add(nodes[i]);
+					}
+					ping_list();
+				}else{
+					alert('指定IP段暂未可用主机');
+				}
+			}
+		},50);
+		
+	});
+	$('#ping-chooser').on('dblclick','a[data-role="ping_select"]',function(){
+		var node=$(this).parents('li').data('node');
+		command(node);
+	});
+	$('#ping-chooser').on('click','a[data-role="ping_rm"]',function(){ 
+		var node=$(this).parents('li').data('node');
+		store_ls.remove(node);
+		ping_list();
+	});
+	
+	// 端口探测
+	function ping(addr,nodes){
+		var ip=addr.split(':')[0];
+		var port=addr.split(':')[1];
+		if(port<=1000){
+			port=port-0+1000;
+		}else{
+			port=port-1000;
+		}
+		var socket=new WebSocket('ws://'+ip+':'+port+'/');
+		socket.onopen=function(event){
+			console.info('%s coreos running',addr);
+			nodes.push(addr);
+			count--;
+		}
+		socket.onerror=function(event){
+			console.info('%s no coreos',addr);
+			count--;
+		}
+	}
+	
 }(baseurl);

@@ -23,7 +23,13 @@ public class CoreRmt {
 	
 	@Activate void start() {
 		String port=System.getProperty("org.osgi.service.http.port","8080");
-		int telnet_port=Integer.parseInt(port)-1000;
+		int http_port=Integer.parseInt(port);
+		int telnet_port=0;
+		if(http_port<=1000){
+			telnet_port=http_port+1000;
+		}else{
+			telnet_port=http_port-1000;
+		}
 		this.server=new TelnetServer(telnet_port,coreos);
 		this.server.start();
 	}

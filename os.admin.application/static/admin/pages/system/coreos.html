@@ -25,6 +25,22 @@
 					              </div>
 					            </div>
 					          </div>
+					          <div class="box box-solid">
+					            <div class="box-header with-border">
+					              <h3 class="box-title">主机探测</h3>
+					            </div>
+					            <div class="box-body">
+					              <div class="btn-group" style="width: 100%; ">
+					              	<div class="input-group" style="margin-bottom: 10px;">
+						                <input id="new-node" type="text" class="form-control" placeholder="网段">
+						                <div class="input-group-btn">
+						                  <button id="add-new-node" type="button" class="btn btn-primary btn-flat">探测</button>
+						                </div>
+						            </div>
+					                <ul class="fc-color-picker" id="ping-chooser" data-role="nodes"></ul>
+					              </div>
+					            </div>
+					          </div>
 					        </div>
 				        	<div id="nodes-container" class="col-md-9 nodes"></div>
 					    </div>
@@ -40,25 +56,30 @@
 </style>
 <script type="text/html" id="coreos_info">
 	<%for(var i=0;i<nodes.length;i++){%>
-		<div class="node">
-			<div class="info"><a class="text-blue" href="#"><i class="iconfont icon-node"></i>${nodes[i].ip}:${nodes[i].port}</a></div>
+		<div class="node" data-type="${nodes[i].type}">
+			<div class="info"><a class="text-${nodes[i].color}" href="javascript:void(0)"><i class="iconfont icon-node"></i>${nodes[i].ip}:${nodes[i].port}</a></div>
 			<ul class="bundles-container" data-node="${nodes[i].ip}:${nodes[i].port}">
 				<%for(var j=0;j<nodes[i].bundles.length;j++){%>
 					<%if(nodes[i].bundles[j].hidden!=true){%>
-						<li data-status="${nodes[i].bundles[j].status}"  data-bundle="${nodes[i].bundles[j].name}:${nodes[i].bundles[j].version}" title="${nodes[i].bundles[j].version}"><a class="text-${nodes[i].bundles[j].color}" href="#"><i class="iconfont icon-${nodes[i].bundles[j].icon}"></i>${nodes[i].bundles[j].text}</a></li>
+						<li data-status="${nodes[i].bundles[j].status}"  data-bundle="${nodes[i].bundles[j].name}:${nodes[i].bundles[j].version}" title="${nodes[i].bundles[j].version}"><a class="text-${nodes[i].bundles[j].color}" href="javascript:void(0)"><i class="iconfont icon-${nodes[i].bundles[j].icon}"></i>${nodes[i].bundles[j].text}</a></li>
 					<%}%>
 				<%}%>
 			</ul>
-			<div class="coreos" data-node="${nodes[i].ip}:${nodes[i].port}"><a class="text-blue" href="#"><i class="iconfont icon-coreos"></i>系统内核</a></div>
+			<div class="coreos" data-node="${nodes[i].ip}:${nodes[i].port}"><a class="text-${nodes[i].color}" href="javascript:void(0)"><i class="iconfont icon-coreos"></i>系统内核</a></div>
 		</div>
 	<%}%>
 </script>
 <script type="text/html" id="bundle_info">
 	<%for(var i=0;i<bundles.length;i++){%>
 		<%if(bundles[i].hidden!=true){%>
-			<li data-bundle="${bundles[i].name}:${bundles[i].version}"  data-location="${bundles[i].location}" title="${bundles[i].version}"><a class="text-${bundles[i].color}" href="#"><i class="iconfont icon-${bundles[i].icon}"></i>${bundles[i].text}</a></li>
+			<li data-bundle="${bundles[i].name}:${bundles[i].version}"  data-location="${bundles[i].location}" title="${bundles[i].version}"><a class="text-${bundles[i].color}" href="javascript:void(0)"><i class="iconfont icon-${bundles[i].icon}"></i>${bundles[i].text}</a></li>
 		<%}else{%>
-			<li class="nodrag" data-bundle="${bundles[i].name}:${bundles[i].version}" data-location="${bundles[i].location}" title="${bundles[i].version}"><a class="text-${bundles[i].color}" href="#"><i class="iconfont icon-${bundles[i].icon}"></i>${bundles[i].text}</a></li>
+			<li class="nodrag" data-bundle="${bundles[i].name}:${bundles[i].version}" data-location="${bundles[i].location}" title="${bundles[i].version}"><a class="text-${bundles[i].color}" href="javascript:void(0)"><i class="iconfont icon-${bundles[i].icon}"></i>${bundles[i].text}</a></li>
 		<%}%>
+	<%}%>
+</script>
+<script type="text/html" id="ping_nodes">
+	<%for(var i=0;i<ping_nodes.length;i++){%>
+		<li data-node="${ping_nodes[i]}"><a class="text-blue" href="javascript:void(0)" data-role="ping_select"><i class="text-green iconfont icon-node"></i>${ping_nodes[i]}</a><a class="text-blue" href="javascript:void(0)" data-role="ping_rm"><i class="fa fa-trash opt"></i></a></li>
 	<%}%>
 </script>

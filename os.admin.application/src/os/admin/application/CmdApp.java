@@ -33,7 +33,7 @@ property = {
 		Debug.COMMAND_FUNCTION + "=change",
 		Debug.COMMAND_FUNCTION + "=move",
 		Debug.COMMAND_FUNCTION + "=check"
-},service=CmdApp.class)
+},service=CmdApp.class,immediate=true)
 public class CmdApp {
 		
 		
