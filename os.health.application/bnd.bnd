@@ -1,0 +1,34 @@
+#
+#  APPLICATION
+#
+
+Bundle-Version: 1.0.0
+Bundle-Description: 光彩健康监控系统
+Export-Package: \
+	osgi.enroute.jsonrpc.api;provide:=true,\
+	osgi.enroute.jsonrpc.dto;provide:=true
+Private-Package: \
+	os.health.application,\
+	os.health.base,\
+	os.health.filter
+
+EnRoute-Application: 	os.health
+JPM-Command:			health
+
+-includeresource: \
+	{readme.md}, \
+	{configuration=configuration}, \
+	{static=static}, \
+	web=web
+Conditional-Package: aQute.lib*
+-buildpath: \
+	osgi.enroute.base.api,\
+	os.core.provider;version=latest,\
+	biz.aQute.bndlib;packages=*
+	
+-testpath: \
+	osgi.enroute.junit.wrapper;version=4.12
+-runbundles: org.apache.felix.log;version='[1.0.1,1.0.2)'
+Export-Package: \
+	osgi.enroute.jsonrpc.api,\
+	osgi.enroute.jsonrpc.dto
