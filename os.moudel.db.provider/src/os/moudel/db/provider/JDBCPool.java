@@ -49,7 +49,7 @@ public class JDBCPool implements DataSource {
     			url=System.getenv().get("OS_DB");
     		}
     		if(url!=null){
-    			db=url;
+    			db="jdbc:mysql://"+url+"/";
     		}else{
     			db=config.getProperty("URL");
     		}

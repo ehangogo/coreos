@@ -20,6 +20,6 @@ public class CheckJob implements CronJob<Object> {
 		this.cmdApp=cmdApp;
 	}
 	public void run(Object object) {
-		cmdApp.check();
+		//cmdApp.check();
 	}
 }
