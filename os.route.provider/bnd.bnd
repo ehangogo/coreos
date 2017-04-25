@@ -38,5 +38,6 @@ Private-Package:  \
 	os.route.provider;version=snapshot,\
 	org.apache.felix.gogo.runtime;version='[1.0.0,1.0.1)',\
 	org.apache.felix.gogo.shell;version='[1.0.0,1.0.1)'
--runee: JavaSE-1.8
+-runee: JavaSE-1.7
 -runfw: org.eclipse.osgi
+-runkeep: true
