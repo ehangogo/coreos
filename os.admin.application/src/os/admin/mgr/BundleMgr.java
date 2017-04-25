@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarFile;
@@ -12,6 +11,7 @@ import java.util.jar.Manifest;
 
 import org.osgi.framework.Bundle;
 
+import os.admin.job.CheckJob;
 import os.core.model.BundleInfo;
 import os.core.model.HostInfo;
 import os.core.model.ServiceInfo;
@@ -28,7 +28,7 @@ public class BundleMgr {
 	
 	
 	// 异常恢复
-	public Map<String,Long> checktab=new HashMap<>();
+	public Map<String,Long> checktab=CheckJob.checktab;
 	// 构造函数
 	public BundleMgr(NetworkWrapper network){
 		this.network=network;;
@@ -40,7 +40,23 @@ public class BundleMgr {
 	}
 	// 指定数目安装
 	public void install(String location,Long num){
-		
+		if(!location.contains(".jar")){
+			location+=".jar";
+		}
+		if(!location.startsWith("file:/")&&!location.startsWith("/")){
+			 String url=System.getProperty("os.repertory");
+			 if(url==null){
+				 url=System.getenv().get("OS_REPERTORY");
+			 }
+			 if(url==null){
+				 url="D:/tmp";
+			 }
+			 try {
+				location=Paths.get(url+"/"+location).toUri().toURL().toString();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
    	    // 组件标识
 	  	String bdlName=parseJar(location);
 	  	if(bdlName==null)return;
@@ -125,6 +141,16 @@ public class BundleMgr {
 			String location=bundle.location;
 			this.install(location, num);
 			this.start(nameVersion);
+		}else{
+			String location=null;
+			if(nameVersion.indexOf("moudel")>-1){
+				location=nameVersion.split(":")[0]+".provider.jar";
+			}else{
+				location=nameVersion.split(":")[0]+".api.jar";
+			}
+			this.install(location, num);
+			this.start(nameVersion);
+			this.add(nameVersion, -1L);
 		}
 	}
 	
@@ -293,6 +319,16 @@ public class BundleMgr {
 	}
 	// 调整实例数目
 	private void add(String key,Long offset){
+		
+		String name=key;
+		String version=null;
+		if(name.indexOf(":")>-1){
+			name=key.split(":")[0];
+			version=key.split(":")[1];
+			version=version.substring(0,5);
+		}
+		name=name.replace(".provider","").replace(".api","").replace(".application","");
+		key=name+":"+version;
 		Long num=checktab.get(key);
 		if(num!=null){
 			checktab.put(key,num+offset);
