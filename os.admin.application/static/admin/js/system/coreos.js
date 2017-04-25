@@ -369,6 +369,9 @@
 		return {bundles:bundles}
 	}
 	function bundles_translate(nodes){
+		nodes.sort(function(obj1,obj2){
+			return (obj1.ip+':'+obj1.port).localeCompare(obj2.ip+':'+obj2.port);
+		});
 		for(var i=0;i<nodes.length;i++){
 			
 			var filter=[];

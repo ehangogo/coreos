@@ -40,9 +40,23 @@ public class JDBCPool implements DataSource {
         	config.load(JDBCPool.class.getResourceAsStream("db.properties"));
             Class.forName(config.getProperty("DRIVER"));
             
+            String db="localhost:8080";
+            // 从启动参数中读取主机名
+    		String url=System.getProperty("os.db");
+    		
+    		// 从环境变量中读取主机名
+    		if(url==null){
+    			url=System.getenv().get("OS_DB");
+    		}
+    		if(url!=null){
+    			db=url;
+    		}else{
+    			db=config.getProperty("URL");
+    		}
+    		
             Integer max=Integer.parseInt(config.getProperty("MAX","20"));
             for(int i=0 ;i<max;i++){
-                Connection conn =  DriverManager.getConnection(config.getProperty("URL")+config.getProperty("DBASE"),
+                Connection conn =  DriverManager.getConnection(db+config.getProperty("DBASE"),
                  config.getProperty("USER"),config.getProperty("PASSWORD"));
                 list.add(conn);
             }
