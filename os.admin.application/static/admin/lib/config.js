@@ -46,7 +46,7 @@ $.JsonRPC=function(url,param){
 }
 // 组件管理
 $.adminRPC=function(url,param){
-	var baseurl='http://localhost:8080/coreos/';
+	var baseurl='/coreos/';
 	var url=baseurl+url+'.json';
 	param=param||{}
 	var deferred=$.Deferred();
