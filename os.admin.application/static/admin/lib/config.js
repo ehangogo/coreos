@@ -1,5 +1,5 @@
 // 服务器基地址
-window.baseurl='http://localhost:8080/jsonrpc/';
+window.baseurl='/jsonrpc/';
 
 //Mock模式
 window.mock={callback:function(){}};
