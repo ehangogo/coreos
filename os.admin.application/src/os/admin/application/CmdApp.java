@@ -29,6 +29,7 @@ property = {
 		Debug.COMMAND_FUNCTION + "=stop",
 		Debug.COMMAND_FUNCTION + "=uninstall",
 		Debug.COMMAND_FUNCTION + "=repertories",
+		Debug.COMMAND_FUNCTION + "=store",
 		Debug.COMMAND_FUNCTION + "=update",
 		Debug.COMMAND_FUNCTION + "=change",
 		Debug.COMMAND_FUNCTION + "=move",
@@ -110,6 +111,9 @@ public class CmdApp {
 		if(cluser!=null){
 			cluser.bundles(addr);
 		}
+	}
+	public void store(){
+		repertories();
 	}
 	public void repertories(){
 		coreos.call(NAMESPACE,"repertories");
