@@ -24,7 +24,7 @@ public class Route extends ZooKeeperServerMain {
 		// 创建路由相关配置
 		System.out.println("配置路由...");
 		config = new ServerConfig();
-		config.parse(new String[]{"6789","E:/route"});
+		config.parse(new String[]{"6789","C:/route"});
 		
 		// 启动路由
 		System.out.println("启动路由...");
