@@ -15,11 +15,17 @@ public class CheckJob implements CronJob<Object> {
 	// 异常恢复
 	public static Map<String,Long> checktab=new HashMap<>();
 		
+	private boolean finish=true;
 	CmdApp cmdApp=null;
 	@Reference void setCmdApp(CmdApp cmdApp){
 		this.cmdApp=cmdApp;
 	}
 	public void run(Object object) {
-		//cmdApp.check();
+		// 通过finish控制检测频率,如果上一次恢复任务未完成,则不进行下一次恢复操作
+		if(finish==true){
+			finish=false;
+			cmdApp.check();
+			finish=true;
+		}
 	}
 }

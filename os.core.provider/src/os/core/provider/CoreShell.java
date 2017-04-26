@@ -34,6 +34,7 @@ import osgi.enroute.debug.api.Debug;
 		Debug.COMMAND_FUNCTION + "=stop",
 		Debug.COMMAND_FUNCTION + "=uninstall",
 		Debug.COMMAND_FUNCTION + "=repertories",
+		Debug.COMMAND_FUNCTION + "=store",
 		Debug.COMMAND_FUNCTION + "=update"
 	},service=CoreShell.class,immediate=true)
 public class CoreShell {
@@ -90,6 +91,7 @@ public class CoreShell {
 		Bundle bundle=coreos.update(nameVersion);
 		print("update", bundle);
 	}
+
 	
 	// 查询接口
 	public void bundles(){
@@ -120,13 +122,8 @@ public class CoreShell {
 			if(type==Bundle.STOPPING){
 				status="STOPPING";
 			}
-			String name=bundle.name.replace(".provider","").replace(".api","").replace(".application","");
-			//String name=bundle.name;
+			String name=bundle.name;
 			String version=bundle.version;
-			if(bundle.version.split("[.]").length>3){
-				int index=bundle.version.lastIndexOf(".");
-				version=bundle.version.substring(0, index);
-			}
 			if(filter.equals("all")){
 				infos.add(String.format("%s|%s|%s|%s",bundle.id,name,version,status));
 			}else{
@@ -140,6 +137,9 @@ public class CoreShell {
 		print(infos);
 	}
 	// 组件仓库
+	public void store(){
+		repertories();
+	}
 	public void repertories(){
 		List<BundleInfo> res=coreos.getRepertories();
 		if(res==null||res.size()==0){return;};
@@ -149,14 +149,11 @@ public class CoreShell {
 			BundleInfo bundle=res.get(i);
 			String location=bundle.location;
 			String version=bundle.version;
-			if(bundle.version.split("[.]").length>3){
-				int index=bundle.version.lastIndexOf(".");
-				version=bundle.version.substring(0, index);
-			}
 			infos.add(String.format("%s|%s|%s",i+1,location,version));
 		}
 		print(infos);
 	}
+	
 	public void services(){
 		services("^os[.].*");
 	}
@@ -239,9 +236,14 @@ public class CoreShell {
 		// print
 		params=params.replaceAll(",$", "");
 		String address=HostUtil.address();
+		String port=HostUtil.port();
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
-		getOut().println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,params,res));
+		if(port!=null){
+			getOut().println(String.format("[%s]->[%s:%s-%s]->[%s(%s)]->[%s]",time,address,port,"call",namespace,params,res));
+		}else{
+			getOut().println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,params,res));
+		}
 	}
 	
 	
@@ -249,6 +251,7 @@ public class CoreShell {
 	void print(String action,Bundle bundle){
 		String name=bundle.getSymbolicName().replace(".provider","").replace(".api","").replace(".application","");
 		String address=HostUtil.address();
+		String port=HostUtil.port();
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
 		String version=bundle.getVersion().toString();
@@ -256,7 +259,11 @@ public class CoreShell {
 			int index=version.lastIndexOf(".");
 			version=version.substring(0, index);
 		}
-		getOut().println(String.format("[%s]->[%s-%s]->[%s:%s]->[success]",time,address,action,name,version));
+		if(port!=null){
+			getOut().println(String.format("[%s]->[%s:%s-%s]->[%s:%s]->[success]",time,address,port,action,name,version));
+		}else{
+			getOut().println(String.format("[%s]->[%s-%s]->[%s:%s]->[success]",time,address,action,name,version));
+		}
 	}
 	void print(List<String> lines){
 		if(lines==null||lines.size()==1){

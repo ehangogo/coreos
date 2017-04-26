@@ -321,12 +321,15 @@
 					    	iframeWin.setTitle=function(title){
 								parent.layer.title(title,index);
 							}
+					    	iframeWin.exit=function(){
+					    		layer.close(index);
+					    	}
 					    }
 				  },
 				  cancel:function(index, layero){ 
 					   var body = layer.getChildFrame('body', index);
 					   var iframeWin = window[layero.find('iframe')[0]['name']];
-					   iframeWin.close();
+					   iframeWin.cancel();
 				  }    
 		 });
 		
@@ -482,7 +485,7 @@
 		$('#ping_nodes').tmpl({ping_nodes:ping_nodes}).appendTo($('#ping-chooser'));
 		
 		// 探测网段
-		$('#new-node').val(store_ky.get());
+		$('#new-node').val(store_ky.get().replace(',','\n'));
 				
 	}
 	
@@ -491,16 +494,68 @@
 	
 	$('#add-new-node').on('click',function(){
 		
+		infos();
+		
 		nodes=[];
 		count=0;
 		timer=null;
 		
-		var addr=$('#new-node').val();
-		if(!addr){return;}
+		var pings=$('#new-node').val();
+		if(!pings){return;}
+		
+		// 根据IP段获取对应的地址
+		var addrs=[];
+		var arr=pings.split('\n');
+		for(var i in arr){
+			addrs=addrs.concat(getAddr(arr[i]));
+		}
+		
+		// 探测
+		for(var i in addrs){
+			count++;
+			ping(addrs[i],nodes);
+		}
+		
+		store_ky.set(pings.replace(/\n{2,}/ig,'\n').replace('\n',','));
+		
+		// 保存结果
+		timer=setInterval(function(){
+			if(count<=0){
+				clearInterval(timer);
+				if(nodes.length>0){
+					store_ls.clear();
+					for(var i in nodes){
+						store_ls.add(nodes[i]);
+					}
+					ping_list();
+				}else{
+					alert('指定IP段暂未可用主机');
+				}
+				infos();
+			}
+		},50);
+		
+	});
+	$('#ping-chooser').on('dblclick','a[data-role="ping_select"]',function(){
+		var node=$(this).parents('li').data('node');
+		command(node);
+	});
+	$('#ping-chooser').on('click','a[data-role="ping_rm"]',function(){ 
+		var node=$(this).parents('li').data('node');
+		store_ls.remove(node);
+		ping_list();
+	});
+	
+	function getAddr(addr){
+		var ip=addr.split(':')[0];
+		var port=addr.split(':')[1];
+		
+		var addrs=$('#new-node').val();
+		if(!addrs){return;}
 		
 		var ip=addr.split(':')[0];
 		var port=addr.split(':')[1];
-	
+		
 		// 符合规则的IP
 		var ips=[];
 		if(ip.indexOf('.'>-1)){
@@ -545,46 +600,8 @@
 				addrs.push(ips[i]+':'+ports[j]);
 			}
 		}
-		
-		var exits_nodes=[];
-		$('.coreos').each(function(){
-			var addr=$(this).data('node');
-			exits_nodes.push(addr);
-		});
-		
-		// 探测
-		for(var i in addrs){
-			count++;
-			ping(addrs[i],nodes);
-		}
-		
-		// 保存结果
-		timer=setInterval(function(){
-			if(count<=0){
-				clearInterval(timer);
-				if(nodes.length>0){
-					store_ky.set(addr);
-					for(var i in nodes){
-						store_ls.add(nodes[i]);
-					}
-					ping_list();
-				}else{
-					alert('指定IP段暂未可用主机');
-				}
-			}
-		},50);
-		
-	});
-	$('#ping-chooser').on('dblclick','a[data-role="ping_select"]',function(){
-		var node=$(this).parents('li').data('node');
-		command(node);
-	});
-	$('#ping-chooser').on('click','a[data-role="ping_rm"]',function(){ 
-		var node=$(this).parents('li').data('node');
-		store_ls.remove(node);
-		ping_list();
-	});
-	
+		return addrs;
+	}
 	// 端口探测
 	function ping(addr,nodes){
 		var ip=addr.split(':')[0];

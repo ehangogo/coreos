@@ -3,7 +3,7 @@
 #
 
 Bundle-Version: 1.0.0
-Bundle-Description: 光彩健康监控系统
+
 Export-Package: \
 	osgi.enroute.jsonrpc.api;provide:=true,\
 	osgi.enroute.jsonrpc.dto;provide:=true
@@ -32,3 +32,13 @@ Conditional-Package: aQute.lib*
 Export-Package: \
 	osgi.enroute.jsonrpc.api,\
 	osgi.enroute.jsonrpc.dto
+	
+Bundle-Icon: icon.png;size=64
+Bundle-Name: 光彩健康监控系统
+Bundle-Description: 光彩健康监控系统Web操作界面
+Bundle-Vendor: 尹行欣
+Bundle-Copyright: 尹行欣
+Bundle-License: 开源
+Bundle-ContactAddress: 524907699@qq.com
+Bundle-Category: 光彩医疗
+Bundle-DocURL: 无

@@ -53,6 +53,10 @@ public class HostUtil{
 		}
 		
 	}
+	public static String port(){
+		String port=System.getProperty("org.osgi.service.http.port");
+		return port;
+	}
 	private static boolean isEmpty(String str){
 		return str==null||str.equals("");
 	}

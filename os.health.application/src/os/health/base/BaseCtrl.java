@@ -3,6 +3,7 @@ package os.health.base;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import os.core.api.CoreOS;
@@ -16,8 +17,17 @@ public abstract class BaseCtrl {
 	// 日志记录类
 	String LOG_CLASS="os.moudel.log.provider.LogDB";
 	
+	public HttpServletRequest request=null;
+	public HttpServletResponse response=null;
+	public HttpSession session=null;
+	
 	// 请求初始化回调函数
-	public void init(Map param){
+	public void init(HttpServletRequest request, HttpServletResponse response,Map param){
+		
+		this.request=request;
+		this.response=response;
+		this.session=request.getSession();
+		
 		Object user=this.getSession().getAttribute("user");
 		if(user!=null){
 			Map map=(Map)user;

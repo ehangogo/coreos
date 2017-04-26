@@ -1,8 +1,6 @@
 package os.route.provider;
 
 
-import java.io.File;
-
 import org.apache.zookeeper.server.ServerConfig;
 import org.apache.zookeeper.server.ZooKeeperServerMain;
 import org.osgi.framework.BundleContext;
@@ -23,14 +21,10 @@ public class Route extends ZooKeeperServerMain {
 	@Activate
 	void activate(BundleContext context) {
 		
-		// 读取数据文件,用于保存路由中的相关信息
-		System.out.println("加载数据...");
-		File dir=context.getDataFile("route");
-		
 		// 创建路由相关配置
 		System.out.println("配置路由...");
 		config = new ServerConfig();
-		config.parse(new String[]{"6789",dir.getAbsolutePath()});
+		config.parse(new String[]{"6789","E:/route"});
 		
 		// 启动路由
 		System.out.println("启动路由...");

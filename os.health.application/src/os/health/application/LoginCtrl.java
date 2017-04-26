@@ -3,6 +3,7 @@ package os.health.application;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpSession;
 
 import org.osgi.service.component.annotations.Component;
@@ -40,7 +41,16 @@ public class LoginCtrl extends BaseCtrl implements JSONRPC  {
 			String passwd=(String)user.get("password");
 			if(password.equals(passwd)){
 				HttpSession session=this.getSession();
+				
 				session.setAttribute("user",user);
+				String id=user.get("id").toString();
+				String name=user.get("username").toString();
+				String role=user.get("role").toString();
+				Cookie user_token=new Cookie("user_token",id+":"+name+":"+role);
+				user_token.setMaxAge(30*60);
+				user_token.setPath(request.getContextPath());
+				response.addCookie(user_token);
+				 
 				return "0";
 			}else{
 				return "密码错误";

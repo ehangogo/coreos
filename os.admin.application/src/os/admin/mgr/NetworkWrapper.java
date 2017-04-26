@@ -72,5 +72,19 @@ public class NetworkWrapper{
 		}
 		return null;
 	}
-	
+	public Object getNetwork(){
+		return this.network;
+	}
+	@Override  
+	public boolean equals(Object other) {
+		NetworkWrapper o=null;
+		if(other instanceof NetworkWrapper){
+			o=(NetworkWrapper)(other);
+		}
+		return network.equals(o.getNetwork());
+	}
+	@Override  
+    public int hashCode() {  
+		return network.hashCode();
+    } 
 }

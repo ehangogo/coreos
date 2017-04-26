@@ -37,14 +37,23 @@ public class BundleInfo extends DTO{
 		if(other instanceof BundleInfo){
 			o=(BundleInfo)(other);
 		}
-		String key=name+version;
-		return key.equals(o.name+o.version);
+		if(id!=null){
+			return id.equals(o.id);
+		}else{
+			String key=name+version;
+			return key.equals(o.name+o.version);
+		}
 		
 	}
 	@Override  
     public int hashCode() {
-		String key=name+version;
-		return key.hashCode();
+		if(id!=null){
+			return id.hashCode();
+		}else{
+			String key=name+version;
+			return key.hashCode();
+		}
+		
     }  
 	
 }

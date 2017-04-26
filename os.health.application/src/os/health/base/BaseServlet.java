@@ -87,7 +87,7 @@ public class BaseServlet extends HttpServlet {
 				
 				// 初始化函数
 				params.put("invoke_method",method);
-				ReflectUtil.invoke(ctrl,"init",params);
+				ReflectUtil.invoke(ctrl,"init",rq,rsp,params);
 				
 				// 执行目标方法
 				Response result = execute(ctrl,method,params);

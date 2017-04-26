@@ -28,16 +28,12 @@
 					          <div class="box box-solid">
 					            <div class="box-header with-border">
 					              <h3 class="box-title">主机探测</h3>
+					              <button id="add-new-node" type="button" class="btn btn-primary btn-flat pull-right btn-ping" style="margin-top:-11px">探测</button>
 					            </div>
 					            <div class="box-body">
 					              <div class="btn-group" style="width: 100%; ">
-					              	<div class="input-group" style="margin-bottom: 10px;">
-						                <input id="new-node" type="text" class="form-control" placeholder="网段">
-						                <div class="input-group-btn">
-						                  <button id="add-new-node" type="button" class="btn btn-primary btn-flat">探测</button>
-						                </div>
-						            </div>
-					                <ul class="fc-color-picker" id="ping-chooser" data-role="nodes"></ul>
+					               	 <textarea id="new-node" class="form-control"  placeholder="192.168.0.1:8080~8090" style="min-height:80px;"></textarea>
+					                 <ul class="fc-color-picker" id="ping-chooser" data-role="nodes"></ul>
 					              </div>
 					            </div>
 					          </div>

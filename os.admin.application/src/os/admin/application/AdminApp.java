@@ -35,10 +35,10 @@ public class AdminApp extends BaseCtrl implements JSONRPC  {
 		List nodes=new ArrayList();
 		ClusterMgr cluster=this.getManager();
 		if(cluster!=null){
-			nodes=sysInfo(cluster.getBundles());
+			nodes=sysInfo(cluster.getBundles(),true);
 		}else{
 			List<BundleInfo> list=this.coreos.getBundles();
-			nodes=sysInfo(list);
+			nodes=sysInfo(list,false);
 		}
 		return nodes;
 	}
@@ -134,8 +134,9 @@ public class AdminApp extends BaseCtrl implements JSONRPC  {
 			try {
 				ReflectUtil.invoke(cmd, method, params.toArray());
 			} catch (Exception e) {
-				e.printStackTrace();
+				
 			}
+			
 		}
 		
 		try {
@@ -154,7 +155,7 @@ public class AdminApp extends BaseCtrl implements JSONRPC  {
 		}
 		return null;
 	}
-	private List sysInfo(List<BundleInfo> list){
+	private List sysInfo(List<BundleInfo> list,boolean cluster){
 		Map cache=new HashMap();
 		list.stream().filter(bdl->{
 			return bdl.name.startsWith("os.");
@@ -175,7 +176,10 @@ public class AdminApp extends BaseCtrl implements JSONRPC  {
 			}).collect(Collectors.toList());
 			bundle.put("services",services);
 			
-			String key=bdl.ip+bdl.port;
+			String key="local";
+			if(cluster==true){
+				key=bdl.ip+":"+bdl.port;
+			}
 			if(cache.get(key)==null){
 				String ip=bdl.ip;
 				String port=bdl.port;

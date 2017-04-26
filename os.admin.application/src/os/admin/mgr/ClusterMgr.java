@@ -24,6 +24,7 @@ public class ClusterMgr {
 	PrintStream out=System.out;
 	public void setOut(PrintStream out){
 		this.out=out;
+		this.manager.setOut(out);
 	}
 	public ClusterMgr(NetworkWrapper network){
 		this.network=network;
@@ -48,21 +49,7 @@ public class ClusterMgr {
 		}
 	}
 	
-	NetworkWrapper getTarget(String addr){
-		String ip=addr;
-		String port="8080";
-		if(addr.contains(":")){
-			ip=addr.split(":")[0];
-			port=addr.split(":")[1];
-		}
-		for(NetworkWrapper net:network.getRoutes()){
-			HostInfo host=net.getHostInfo();
-			if(host.ip.equals(ip)&&host.port.equals(port)){
-				return net;
-			}
-		}
-		return null;
-	}
+	
 	public void services(){
 		services("^os[.].*");
 	}
@@ -157,8 +144,7 @@ public class ClusterMgr {
 			if(type==Bundle.STOPPING){
 				status="STOPPING";
 			}
-			String name=bundle.name.replace(".provider","").replace(".api","").replace(".application","");
-			
+			String name=bundle.name;
 			String version=bundle.version;
 			if(bundle.version.split("[.]").length>3){
 				int index=bundle.version.lastIndexOf(".");
@@ -323,19 +309,6 @@ public class ClusterMgr {
 		this.manager.check();
 	}
 	
-	// 其他接口
-	public void refresh(String... args){
-		this.manager.refresh(args);
-	}
-	public void resolve(String... args){
-		this.manager.resolve(args);
-	}
-	public void startLevel(String... args){
-		this.manager.startLevel(args);
-	}
-	public void bundleLevel(String... args){
-		this.manager.bundleLevel(args);
-	}
 	
 	// 集群信息-Web接口
 	public List<ServiceInfo> getServices(){
@@ -359,5 +332,20 @@ public class ClusterMgr {
 		if(target==null) return null;
 		Object res=target.call(namespace,name,args);
 		return res;
+	}
+	NetworkWrapper getTarget(String addr){
+		String ip=addr;
+		String port="8080";
+		if(addr.contains(":")){
+			ip=addr.split(":")[0];
+			port=addr.split(":")[1];
+		}
+		for(NetworkWrapper net:network.getRoutes()){
+			HostInfo host=net.getHostInfo();
+			if(host.ip.equals(ip)&&host.port.equals(port)){
+				return net;
+			}
+		}
+		return null;
 	}
 }

@@ -31,28 +31,25 @@ import org.osgi.util.tracker.ServiceTracker;
 import os.core.api.CoreOS;
 import os.core.model.BundleInfo;
 import os.core.model.ServiceInfo;
-import os.core.tools.JarUtil;
+import os.core.tools.BundleUtil;
 import os.core.tools.ReflectUtil;
-import os.core.tools.StringUtil;
 
 /**
  * 软件内核
  * 提供基础组件安装卸载等操作
  */
-@Component(name="os.core")
+@Component(name="os.core",immediate=true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CoreImpl implements CoreOS{
 	
 	BundleContext context=null;
-	StartLevel startLevel=null;
-	PackageAdmin pageAdmin=null;
 	
 	// 本地服务
 	Set<ServiceInfo> services=new HashSet<>();
 	// 本地组件
 	Set<BundleInfo>  bundles=new HashSet<>();
 		
-	// 启动
+	// 启动方法,参数componet和context由OSGI容器注入
 	@Activate void start(ComponentContext componet,BundleContext context) {
 		
 		this.context=context;
@@ -121,19 +118,11 @@ public class CoreImpl implements CoreOS{
 			e.printStackTrace();
 		}
 	}
-	// 注入
-	@Reference void setStartLevel(StartLevel startLevel){
-		this.startLevel=startLevel;
-	}
-	// 注入
-	@Reference void setPackageAdmin(PackageAdmin pageAdmin){
-		this.pageAdmin=pageAdmin;
-	}
 	
 	// 管理接口
 	@Override
 	public Bundle install(String location) throws BundleException{
-		location=JarUtil.getRepertPath(location);
+		location=BundleUtil.getRepPath(location);
 		return context.installBundle(location);
 	}
 	@Override
@@ -144,7 +133,6 @@ public class CoreImpl implements CoreOS{
 			for(Bundle bde:bundles){
 				bundle=bde;
 				bde.uninstall();
-				break;
 			}
 		}
 		return bundle;
@@ -169,7 +157,6 @@ public class CoreImpl implements CoreOS{
 			for(Bundle bde:bundles){
 				bundle=bde;
 				bde.stop();
-				break;
 			}
 		}
 		return bundle;
@@ -182,7 +169,6 @@ public class CoreImpl implements CoreOS{
 			for(Bundle bde:bundles){
 				bundle=bde;
 				bde.update();
-				break;
 			}
 		}
 		return bundle;
@@ -195,42 +181,20 @@ public class CoreImpl implements CoreOS{
 		return list;
 	}
 	@Override
-	public List<BundleInfo> getRepertories() {
-		// 组件仓库地址
-		 String url=null;
-		
-		 // 从启动参数和环境变量中获取仓库地址
-		 url=System.getProperty("os.repertory");
-		 if(StringUtil.isEmpty(url)){
-			 url=System.getenv().get("OS_REPERTORY");
-		 }
-		 if(StringUtil.isEmpty(url)){
-			 url="D:/tmp";
-		 }
-		 
-		 List<String> list=JarUtil.bunldeList(url);
-		 List<BundleInfo> res=new ArrayList<>();
-		 list.stream().forEach(row->{
-			 BundleInfo info=new BundleInfo();
-			 info.name=row.split(":")[0];
-			 info.version=row.split(":")[1];
-			 info.location=row.split(":")[2];
-			 res.add(info);
-		 });
-		return res;
-	}
-	@Override
 	public List<ServiceInfo> getServices() {
 		List list=Arrays.asList(services.toArray());
 		return list;
 	}
 	@Override
+	public List<BundleInfo> getRepertories() {
+		return BundleUtil.getRepList();
+	}
+	@Override
 	public Object getService(String namespace) {
 		// 本地查找
 		if(context!=null){
-			// 根据类名查找对应的服务
 			ServiceTracker tracker = new ServiceTracker(context,namespace,null);tracker.open();
-			Object service =tracker.getService();
+			Object service=tracker.getService();
 			return service;
 		}
 		return null;
@@ -262,11 +226,8 @@ public class CoreImpl implements CoreOS{
 							return (T)ReflectUtil.invoke(service, method, params);
 						}catch (Exception e) {
 							tracker.close();
-							throw new RuntimeException("本地调用错误");
+							throw new RuntimeException("本地调用错误",e);
 						}
-					// 远程调用
-					}else{
-						return (T)rmtCall(namespace,method,args);
 					}
 				}else{
 					return (T)rmtCall(namespace,method,args);
@@ -285,118 +246,152 @@ public class CoreImpl implements CoreOS{
 				Method func=network.getClass().getMethod("call",new Class[]{String.class,String.class,Object[].class});
 				return func.invoke(network, namespace,service,args);
 			}catch(Exception e){
-				throw new RuntimeException("远程调用错误");
+				throw new RuntimeException("远程调用错误",e);
 			}
 		}
 		return null;
 	}
+	
+	
 	// 工具函数
+	// 根据组件名称和版本检索组件
 	List<Bundle> search(String nameVersion){
 		List<Bundle> bundles=new ArrayList<>();
+		// 如果nameVersion是由数字组成的串,这表明nameVersion为组件ID,则根据ID查找组件
 		if(nameVersion.matches("\\d+")){
 			Bundle bundle=context.getBundle(Long.parseLong(nameVersion));
 			bundles.add(bundle);
+		// 否则根据组件名称和组件版本,搜索匹配的组件
 		}else{
-			String name=nameVersion;
-			String version=null;
-			if(name.indexOf(":")>-1){
-				name=nameVersion.split(":")[0];
-				version=nameVersion.split(":")[1];
-			}
-			for(Bundle bde:context.getBundles()){
-				String bdeName=bde.getSymbolicName();
-				if(bdeName.equals(name)||bdeName.equals(name+".provider")||bdeName.equals(name+".api")||bdeName.equals(name+".application")){
-					if(version!=null){
-						if(bde.getVersion().toString().startsWith(version)){
-							bundles.add(bde);
-						}
-					}else{
-						bundles.add(bde);
+			// name:version截串
+			String name=BundleUtil.name(nameVersion);
+			String version=BundleUtil.version(nameVersion);
+			for(Bundle bundle:context.getBundles()){
+				// 获取组件的简称和版本号
+				String bdlName=BundleUtil.name(bundle.getSymbolicName());
+				String bdlVerson=BundleUtil.version(bundle.getVersion().toString());
+				
+				// 比较搜索串和目标组件
+				if(version!=null){
+					if(bdlName.equals(name)&&bdlVerson.equals(version)){
+						bundles.add(bundle);
+					}
+				}else{
+					if(bdlName.equals(name)){
+						bundles.add(bundle);
 					}
 				}
 			}
 		}
-		return bundles;
+		// 返回搜索结果
+		return bundles.size()==0?null:bundles;
 	}
+	// 通过反射获取一个类的服务信息
 	ServiceInfo SrvInfo(Class clazz,String id){
-		ServiceInfo srvInfo=new ServiceInfo();
 		try{
-			srvInfo.id=id;
-	    	srvInfo.name=clazz.getName();
+	    	// 类方法
 	    	List<String> methods=new ArrayList<>();
 	    	for(Method m:clazz.getDeclaredMethods()){
 	    		methods.add(m.getName());
 			}
+	    	// save
+	    	ServiceInfo srvInfo=new ServiceInfo();
+			srvInfo.id=id;
+	    	srvInfo.name=clazz.getName();
 	    	srvInfo.status="RUNNING";
 	    	srvInfo.methods=methods;
-	    	
+	    	// hock
 	    	if(srvInfo.name==null){return null;};
-		}catch(Exception e){ e.printStackTrace();return null;}
-    	return srvInfo;
+	    	return srvInfo;
+	    	
+		}catch(Exception e){ 
+			new RuntimeException("获取服务信息失败",e);
+		}
+    	return null;
 	}
+	// 通过服务引用对象获取服务信息
 	ServiceInfo SrvInfo(ServiceReference ref){
 		
-	    Pattern pattern = Pattern.compile("\\{(.*)\\}=\\{(.*)\\}");
-	    Matcher matcher = pattern.matcher(ref.toString());
-	    
-	    String clz=null;
+		Map<String,String> props=getProps(ref.toString());
+		
+		String clz=props.get("clazz");
+		
+		try{
+			Object service=context.getService(ref);
+			if(service==null){
+				return null;
+			}
+			
+			// 查找服务接口类
+	    	Class clazz=service.getClass();
+	    	for(Class<?> inter:clazz.getInterfaces()){
+	    		if(inter.getName().equals(clz)){
+	    			clazz=inter;
+	    		}
+	    	}
+	    	
+	    	// 通过反射获取接口方法名
+	    	Method ms[]=null;
+	    	List<String> methods=new ArrayList<>();
+	    	try{
+	    		// hock
+	    		if(clazz.getName().equals("org.apache.felix.gogo.command.OBR")){
+	    			return null;
+	    		}
+	    		if(clazz.getName().equals("org.apache.felix.gogo.runtime.threadio.ThreadIOImpl")){
+	    			return null;
+	    		}
+	    		ms=clazz.getDeclaredMethods();
+	    	}catch(Exception e){
+	    		ms=clazz.getMethods();
+	    	}finally{}
+	    	for(Method m:ms){
+	    		methods.add(m.getName());
+			}
+	    	
+	    	// save
+	    	ServiceInfo srvInfo=new ServiceInfo();
+	    	srvInfo.name=clz;
+	    	srvInfo.methods=methods;
+	    	srvInfo.status="RUNNING";
+	    	srvInfo.id=props.get("service.id");
+	    	srvInfo.bundle=ref.getBundle().getBundleId()+"";
+	    	
+	    	// hock
+	    	if(srvInfo.name==null){return null;};
+	    	
+	    	return srvInfo;
+			
+		}catch(Exception e){ 
+			e.printStackTrace();
+		}
+    	return null;
+	 }
+ 	// 通过服务引用获取服务属性信息
+	Map<String,String> getProps(String json){
+		Pattern pattern = Pattern.compile("\\{(.*)\\}=\\{(.*)\\}");
+	    Matcher matcher = pattern.matcher(json);
 	    Map<String,String> props=new HashMap<>();
     	while(matcher.find()){
-    		clz=matcher.group(1);
+    		String clz=matcher.group(1);
+    		props.put("clazz",clz);
     		for(String item:matcher.group(2).split(",\\s")){
     			try{
     				props.put(item.split("=")[0],item.split("=")[1]);
     			}catch(Exception e){};
     		}
     	}
-    	
-		ServiceInfo srvInfo=new ServiceInfo();
-		try{
-			Object obj=context.getService(ref);
-			if(obj!=null){
-		    	Class clazz=obj.getClass();
-		    	for(Class<?> inter:clazz.getInterfaces()){
-		    		if(inter.getName().equals(clz)){
-		    			clazz=inter;
-		    		}
-		    	}
-		    	List<String> methods=new ArrayList<>();
-		    	Method ms[]=null;
-		    	try{
-		    		// hock
-		    		if(clazz.getName().equals("org.apache.felix.gogo.command.OBR")){
-		    			return null;
-		    		}
-		    		if(clazz.getName().equals("org.apache.felix.gogo.runtime.threadio.ThreadIOImpl")){
-		    			return null;
-		    		}
-		    		ms=clazz.getDeclaredMethods();
-		    	}catch(Exception e){
-		    		ms=clazz.getMethods();
-		    	}finally{}
-		    	for(Method m:ms){
-		    		methods.add(m.getName());
-				}
-		    	
-		    	// save
-		    	srvInfo.id=props.get("service.id");
-		    	srvInfo.name=clz;
-		    	srvInfo.status="RUNNING";
-		    	srvInfo.methods=methods;
-		    	// 所属组件ID
-		    	srvInfo.bundle=ref.getBundle().getBundleId()+"";
-			}else{
-				return null;
-			}
-		}catch(Exception e){ e.printStackTrace();return null;}
-    	return srvInfo;
-	 }
+    	return props;
+	}
+	// 通过组件对象获取组件信息
 	BundleInfo BleInfo(Bundle bundle){
-		BundleInfo bleInfo=new BundleInfo();
+		
 		try{
+			BundleInfo bleInfo=new BundleInfo();
+			
 			bleInfo.id=bundle.getBundleId()+"";
-			bleInfo.name=bundle.getSymbolicName();
-			bleInfo.version=bundle.getVersion().toString();
+			bleInfo.name=BundleUtil.name(bundle.getSymbolicName());
+			bleInfo.version=BundleUtil.version(bundle.getVersion().toString());
 			bleInfo.status=bundle.getState()+"";
 			bleInfo.location=bundle.getLocation();
 			
@@ -413,42 +408,32 @@ public class CoreImpl implements CoreOS{
 					}
 				}
 			}
+			return bleInfo;
 			
-		}catch(Exception e){e.printStackTrace();}
-		return bleInfo;
-	 }
-	Object translate(Object obj, Class<?> clz) {
-		String name=clz.getName();
-		boolean flag1=obj instanceof Integer;
-		boolean flag2=obj instanceof Long;
-		boolean flag3=obj instanceof Double;
-		boolean flag4=obj instanceof Float;
-		
-		if(flag1||flag2||flag3||flag4||obj instanceof String){
-			if(name.equals("int")||name.equals(Integer.class.getName())){
-				return Integer.parseInt(obj.toString());
-			}	
-			if(name.equals("long")||name.equals(Long.class.getName())){
-				return Long.parseLong(obj.toString());
-			}
-			if(name.equals("float")||name.equals(Float.class.getName())){
-				return Float.parseFloat(obj.toString());
-			}
-			if(name.equals("double")||name.equals(Double.class.getName())){
-				return Double.parseDouble(obj.toString());
-			}
+		}catch(Exception e){
+			e.printStackTrace();
 		}
-		
-		return obj;
-	}
-	
+		return null;
+	 }
 	
 	// 其他接口
 	@Override
 	public BundleContext getContext(){
 		return context;
 	}
+	
+	
 	// 其他接口
+	StartLevel startLevel=null;
+	PackageAdmin pageAdmin=null;
+	// 注入
+	@Reference void setStartLevel(StartLevel startLevel){
+		this.startLevel=startLevel;
+	}
+	// 注入
+	@Reference void setPackageAdmin(PackageAdmin pageAdmin){
+		this.pageAdmin=pageAdmin;
+	}
 	@Override
 	public List<Bundle> refresh(String...args){
 		if(args.length==0){

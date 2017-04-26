@@ -30,11 +30,20 @@ public class ServiceInfo extends DTO{
 		if(other instanceof ServiceInfo){
 			o=(ServiceInfo)(other);
 		}
-        return (name+id).equals(o.name+o.id);  
+		if(id!=null){
+			return id.equals(o.id);
+		}else{
+			return (name).equals(o.name);
+		}
 	}
 	@Override  
     public int hashCode() {  
-        return (name+id).hashCode();  
+		if(id!=null){
+			return id.hashCode();
+		}else{
+			String key=name;
+			return key.hashCode();
+		}
     } 
 	
 }

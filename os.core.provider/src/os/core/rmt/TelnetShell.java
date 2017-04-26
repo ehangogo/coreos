@@ -167,11 +167,11 @@ public class TelnetShell implements Runnable {
 				}
 			}
 			if(target==null){
-				if(root_ref!=null){
-					target=root_ref;
-				}
 				if(core_ref!=null){
 					target=core_ref;
+				}
+				if(root_ref!=null){
+					target=root_ref;
 				}
 			}
 			if(target!=null){

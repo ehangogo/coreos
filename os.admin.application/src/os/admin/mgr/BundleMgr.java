@@ -1,13 +1,12 @@
 package os.admin.mgr;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
+import java.io.PrintStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-import java.util.jar.JarFile;
-import java.util.jar.Manifest;
 
 import org.osgi.framework.Bundle;
 
@@ -15,6 +14,7 @@ import os.admin.job.CheckJob;
 import os.core.model.BundleInfo;
 import os.core.model.HostInfo;
 import os.core.model.ServiceInfo;
+import os.core.tools.BundleUtil;
 
 /**
  * 组件管理对象
@@ -26,7 +26,11 @@ public class BundleMgr {
 	private NetworkWrapper network;
 	private String NAMESPACE="os.core.provider.CoreShell";
 	
-	
+	// 输入流
+	PrintStream out=System.out;
+	public void setOut(PrintStream out){
+		this.out=out;
+	}
 	// 异常恢复
 	public Map<String,Long> checktab=CheckJob.checktab;
 	// 构造函数
@@ -40,25 +44,10 @@ public class BundleMgr {
 	}
 	// 指定数目安装
 	public void install(String location,Long num){
-		if(!location.contains(".jar")){
-			location+=".jar";
-		}
-		if(!location.startsWith("file:/")&&!location.startsWith("/")){
-			 String url=System.getProperty("os.repertory");
-			 if(url==null){
-				 url=System.getenv().get("OS_REPERTORY");
-			 }
-			 if(url==null){
-				 url="D:/tmp";
-			 }
-			 try {
-				location=Paths.get(url+"/"+location).toUri().toURL().toString();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		
    	    // 组件标识
-	  	String bdlName=parseJar(location);
+	  	BundleInfo bundle=BundleUtil.bundleInfo(location);
+	    String bdlName=bundle.name;
 	  	if(bdlName==null)return;
 		// 安装bundle的节点
 		List<NetworkWrapper> installNodes=new ArrayList<>();
@@ -141,22 +130,23 @@ public class BundleMgr {
 			String location=bundle.location;
 			this.install(location, num);
 			this.start(nameVersion);
+			
+			this.checktab.put(BundleUtil.nameVersion(bundle), num);
+		// hock
 		}else{
-			String location=null;
-			if(nameVersion.indexOf("moudel")>-1){
-				location=nameVersion.split(":")[0]+".provider.jar";
-			}else{
-				location=nameVersion.split(":")[0]+".api.jar";
-			}
+			// 通过nameVersion获取jar包安装路径
+			String location=BundleUtil.fullName(nameVersion)+".jar";
 			this.install(location, num);
 			this.start(nameVersion);
-			this.add(nameVersion, -1L);
+			
+			bundle=BundleUtil.bundleInfo(location);
+			this.checktab.put(BundleUtil.nameVersion(bundle), num);
 		}
 	}
 	
 	// 动态迁移
 	public void move(String nameVersion,String from,String to){
-		String location=nameVersion.split(":")[0]+".jar";
+		String location=BundleUtil.bundlePath(nameVersion);
 		this.install(to,location);
 		this.start(to,nameVersion);
 		this.uninstall(from,nameVersion);
@@ -210,9 +200,6 @@ public class BundleMgr {
 	
 	// 异常恢复
 	public void check() {
-		checktab.forEach((key,val)->{
-			System.out.println(key+"--"+val);
-		});
 		// 查询安装情况
 		checktab.forEach((name,num)->{
 			int count=0;
@@ -223,6 +210,7 @@ public class BundleMgr {
 				count+=size;
 			}
 			if(count<num){
+				System.out.println(String.format("%s->%s->%s","异常恢复:"+name,count,num));
 				this.change(name,num);
 			}
 		});
@@ -231,64 +219,68 @@ public class BundleMgr {
 	// 查询接口
 	public List<ServiceInfo> getServices(){
 		List<ServiceInfo> res=new ArrayList<>();
-		network.getRoutes().stream().forEach(net->{
-			res.addAll(net.getServices());
-		});
+		for(NetworkWrapper net:network.getRoutes()){
+			List<ServiceInfo> services=net.getServices();
+			if(services!=null){
+				res.addAll(services);
+			}
+		}
 		return res;
 	}
 	public List<BundleInfo> getBundles(){
 		List<BundleInfo> res=new ArrayList<>();
-		network.getRoutes().stream().forEach(net->{
-			res.addAll(net.getBundles());
-		});
+		for(NetworkWrapper net:network.getRoutes()){
+			List<BundleInfo> bundles=net.getBundles();
+			if(bundles!=null){
+				res.addAll(net.getBundles());
+			}
+		}
 		return res;
 	}
 	public List<HostInfo> getNodes(){
 		List<HostInfo> res=new ArrayList<>();
-		network.getRoutes().stream().forEach(net->{
-			res.add(net.getHostInfo());
-		});
+		for(NetworkWrapper net:network.getRoutes()){
+			HostInfo host=net.getHostInfo();
+			if(host!=null){
+				res.add(host);
+			}
+		}
 		return res;
 	}
 	
 	// 工具函数
 	private void install(NetworkWrapper net,String location){
-		if(!location.contains(".jar")){
-			location+=".jar";
-		}
-		if(!location.startsWith("file:/")&&!location.startsWith("/")){
-			 String url=System.getProperty("os.repertory");
-			 if(url==null){
-				 url=System.getenv().get("OS_REPERTORY");
-			 }
-			 if(url==null){
-				 url="D:/tmp";
-			 }
-			 try {
-				location=Paths.get(url+"/"+location).toUri().toURL().toString();
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
+		BundleInfo bundle=BundleUtil.bundleInfo(location);
 		
-		String nameVersion=parseJar(location);
-	  	if(nameVersion==null)return;
+		if(bundle==null)return;
+		
+		String name=bundle.name;
+	    String version=bundle.version;
+	    String nameVersion=name+":"+version;
+	  	
 		if(net!=null){
-			List<BundleInfo> bdls=net.getBundles();
-			int size=search(nameVersion,bdls).size();
-			if(size<=0){
+			List<BundleInfo> bdls=search(nameVersion,net.getBundles());
+			if(bdls.size()<=0){
 				net.call(NAMESPACE, "install", location);
 				add(nameVersion,1L);
+				
+				// 打印非本机安装信息
+				if(!network.equals(net)){
+					DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+					String time=format.format(new Date());
+					out.println(String.format("[%s]->[%s:%s-%s]->[%s:%s]->[success]",time,net.getHostInfo().ip,net.getHostInfo().port,"install",bundle.name,bundle.version));
+				}
 			}
 		}
 	}
 	private void uninstall(NetworkWrapper net,String nameVersion){
 		if(net!=null){
-			List<BundleInfo> bdls=net.getBundles();
-			int size=search(nameVersion,bdls).size();
-			if(size>0){
+			List<BundleInfo> bdls=search(nameVersion,net.getBundles());
+			if(bdls.size()>0){
 				net.call(NAMESPACE, "uninstall",nameVersion);
-				add(nameVersion,-1L);
+				String name=bdls.get(0).name;
+				String version=bdls.get(0).version;
+				add(name+":"+version,-1L);
 			}
 		}
 	}
@@ -313,22 +305,19 @@ public class BundleMgr {
 	private Bundle execute(String action,NetworkWrapper net,String nameVersion){
 		if(net!=null){
 			net.call(NAMESPACE,action, nameVersion);
+			// 打印非本机安装信息
+			if(!network.equals(net)){
+				DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+				String time=format.format(new Date());
+				out.println(String.format("[%s]->[%s:%s-%s]->[%s]->[success]",time,net.getHostInfo().ip,net.getHostInfo().port,action,nameVersion));
+			}
 			return null;
 		}
 		return null;
 	}
 	// 调整实例数目
 	private void add(String key,Long offset){
-		
-		String name=key;
-		String version=null;
-		if(name.indexOf(":")>-1){
-			name=key.split(":")[0];
-			version=key.split(":")[1];
-			version=version.substring(0,5);
-		}
-		name=name.replace(".provider","").replace(".api","").replace(".application","");
-		key=name+":"+version;
+		key=BundleUtil.nameVersion(key);
 		Long num=checktab.get(key);
 		if(num!=null){
 			checktab.put(key,num+offset);
@@ -356,85 +345,33 @@ public class BundleMgr {
 	}
 	// 过滤指定组件对象
 	private List<BundleInfo> search(String nameVersion,List<BundleInfo> arry){
-		String name=nameVersion;
-		String version=null;
-		if(name.indexOf(":")>-1){
-			name=nameVersion.split(":")[0];
-			version=nameVersion.split(":")[1];
-			version=version.substring(0,5);
-		}
+		String name=BundleUtil.name(nameVersion);
+		String version=BundleUtil.version(nameVersion);
+		
 		List<BundleInfo> bundles=new ArrayList<>();
-		for(BundleInfo bde:arry){
+		for(BundleInfo bundle:arry){
 			// 排查卸载的组件
-			if(bde.status.equals("1")){
+			if(bundle.status.equals("1")){
 				continue;
 			}
-			String bdeName=bde.name;
-			if(bdeName.equals(name)||bdeName.equals(name+".provider")||bdeName.equals(name+".api")||bdeName.equals(name+".application")){
-				if(version!=null){
-					if(bde.version.startsWith(version)){
-						bundles.add(bde);
-					}
-				}else{
-					bundles.add(bde);
+			// 获取组件的简称和版本号
+			String bdlName=BundleUtil.name(bundle.name);
+			String bdlVerson=BundleUtil.version(bundle.version);
+			
+			// 比较搜索串和目标组件
+			if(version!=null){
+				if(bdlName.equals(name)&&bdlVerson.equals(version)){
+					bundles.add(bundle);
+				}
+			}else{
+				if(bdlName.equals(name)){
+					bundles.add(bundle);
 				}
 			}
 		}
 		return bundles;
 	}
-	private String parseJar(String location){
-		final StringBuilder name=new StringBuilder();
-		final StringBuilder version=new StringBuilder();
-		JarFile jar=null;
-		try{
-			jar=new JarFile(new File(location.replace("file:/",""))); 
-		    Manifest manifest = jar.getManifest();
-		    manifest.getMainAttributes().forEach((key,value)->{
-		    	if(key.toString().equals("Bundle-SymbolicName")){
-		    		name.append(value.toString());
-		    	}
-		    	 if(key.toString().equals("Bundle-Version")){
-		    		 version.append(value.toString());
-		    	 }
-		    });
-		    if(jar!=null) jar.close();
-		}catch(Exception e){
-			if(jar!=null)
-				try {
-					jar.close();
-				}catch(IOException e1){}
-			return null;
-		}
-		String namestr=name.toString().replace(".api","").replace(".provider","").replace(".application","");
-		String versionstr=version.toString().substring(0,5);
-		String bdlName=namestr+":"+versionstr;
-		return bdlName;
-	}
-	// 提供接口
-	public void refresh(String...args){
-		List<NetworkWrapper> routes=network.getRoutes();
-		for(NetworkWrapper route:routes){
-			route.call(NAMESPACE,"refresh",args);
-		}
-	}
-	public void resolve(String...args){
-		List<NetworkWrapper> routes=network.getRoutes();
-		for(NetworkWrapper route:routes){
-			route.call(NAMESPACE,"resolve",args);
-		}
-	}
-	public void startLevel(String... args){
-		List<NetworkWrapper> routes=network.getRoutes();
-		for(NetworkWrapper route:routes){
-			route.call(NAMESPACE,"startLevel",args);
-		}
-	}
-	public void bundleLevel(String... args){
-		List<NetworkWrapper> routes=network.getRoutes();
-		for(NetworkWrapper route:routes){
-			route.call(NAMESPACE,"bundleLevel",args);
-		}
-	}
+	
 	
 }
 

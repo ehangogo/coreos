@@ -2,6 +2,7 @@ package os.route.provider;
 
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,9 +20,22 @@ import osgi.enroute.debug.api.Debug;
 			  property = { 
 			    Debug.COMMAND_SCOPE + "=route",  
 			    Debug.COMMAND_FUNCTION + "=list" 
-			  })
+			  },immediate=true)
 public class RouteCmd {
 	
+	// 输出流
+	private ThreadLocal<PrintStream> outMap=new ThreadLocal<>();
+	public void setOut(PrintStream out){
+		outMap.set(out);
+	}
+	public PrintStream getOut(){
+		PrintStream out=outMap.get();
+		if(out==null){
+			return System.out;
+		}else{
+			return out;
+		}
+	}
 	private ZooKeeper zk;
 
 	@Activate
@@ -89,6 +103,6 @@ public class RouteCmd {
 		stdout(line_fmt+"+",chs.toArray());
 	}
 	void stdout(String format,Object[] args){
-		System.out.println(String.format(format, args));
+		getOut().println(String.format(format, args));
 	}
 }

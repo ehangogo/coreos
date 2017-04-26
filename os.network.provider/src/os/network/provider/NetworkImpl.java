@@ -43,12 +43,11 @@ public class NetworkImpl implements Network{
 	public void setOut(PrintStream out){
 		this.out=out;
 	}
-	ConfigurationAdmin cm=null;
 	@Activate void start(){
-		if(this.cm!=null){
-			this.connect(cm);
-		}
+		// hock
+		add(this);
 	}
+	
 	// 系统内核
 	CoreOS coreos=null;
 	@Reference void setCoreOS(CoreOS coreos){
@@ -56,7 +55,6 @@ public class NetworkImpl implements Network{
 	}
 	// 连接路由
 	@Reference void connect(ConfigurationAdmin cm) {
-		this.cm=cm;
 		HostInfo host=this.getHostInfo();
 		String ip=host.ip;
 		String port=host.port;// http端口

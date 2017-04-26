@@ -1,6 +1,8 @@
 package os.health.filter;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -8,6 +10,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -35,12 +38,37 @@ public class HealthFilter implements Filter {
 			rep.setHeader("Access-Control-Allow-Methods","*");  
 			rep.setHeader("Access-Control-Allow-Headers","*");  
 			rep.setHeader("Access-Control-Allow-Credentials","true");  
-			rep.setHeader("Access-Control-Max-Age","3600");  
 			if(req.getMethod().equals("OPTIONS")){
 				rep.setStatus(HttpServletResponse.SC_OK);
 				return;
 			}
 			Object user=req.getSession().getAttribute("user");
+			
+			// hock
+			if(user==null){
+				// ≥¢ ‘¥”Cookie∂¡»°÷µ
+				String user_token=null;
+				Cookie cookies[]=req.getCookies();
+				if(cookies!=null){
+		           for(Cookie cookie:cookies){
+	                 String name=cookie.getName();
+	                 String value=cookie.getValue();
+	                 if(name.endsWith("user_token")){
+	                	 user_token=value;
+	                	 break;
+	                 }
+		           }
+		         }
+				
+				if(user_token!=null){
+					Map<String,String> map=new HashMap<String,String>();
+					map.put("id",user_token.split(":")[0]);
+					map.put("username",user_token.split(":")[1]);
+					map.put("role",user_token.split(":")[2]);
+					req.getSession().setAttribute("user",map);
+				}
+			}
+			user=req.getSession().getAttribute("user");
 			String path=req.getRequestURI();
 			if(path!=null&&path.endsWith(".json")){
 				if(!path.endsWith("login.json")){

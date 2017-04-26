@@ -3,16 +3,11 @@
 #
 
 
-Bundle-Version:					1.0.0.${tstamp}
-Bundle-Description: 				\
-	A bundle with a provider. Notice that this provider exports the API package. \
-	It also provides a JUnit test and it can be run standalone. \
-	\
-	${warning;Please update this Bundle-Description in os.moudel.db.provider/bnd.bnd}
+Bundle-Version:					1.0.0
+
 
 Private-Package: \
-	os.moudel.db.provider;,\
-	os.moudel.db.provider.sql
+	os.moudel.db.provider;
 Import-Package: javax.sql,os.moudel.db.api;version="[1.0,2)",com.mysql.jdbc;version="5.1.35"
 -buildpath: \
 	osgi.enroute.base.api;version=1.0,\
@@ -44,3 +39,13 @@ Import-Package: javax.sql,os.moudel.db.api;version="[1.0,2)",com.mysql.jdbc;vers
 	org.apache.felix.gogo.shell;version='[1.0.0,1.0.1)',\
 	os.core.provider;version=snapshot
 Export-Package: os.moudel.db.api
+
+Bundle-Icon: icon.png;size=64
+Bundle-Name: 数据管理
+Bundle-Description: 提供了连接MySQL数据库的相关功能和查询接口
+Bundle-Vendor: 尹行欣
+Bundle-Copyright: 尹行欣
+Bundle-License: 开源
+Bundle-ContactAddress: 524907699@qq.com
+Bundle-Category: 光彩医疗
+Bundle-DocURL: 无

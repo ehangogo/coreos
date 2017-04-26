@@ -5662,3 +5662,6 @@ a.btn-export:visited{
 	font-size:24px;
 	padding:0 15px;
 }
+.btn-ping:hover{
+	background-color: #367fa9 !important;
+}

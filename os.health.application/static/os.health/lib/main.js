@@ -799,6 +799,9 @@ function _init() {
 (function($){
 	$.JsonRPC("login/info").done(function(user){
 		if(user){
+			//$.cookie('userid',user.id);
+			//$.cookie('username',user.username);
+	    	//$.cookie('password',user.password);
 			auth(user);
 			$('#user_info').html('用户：'+user.username);
 	    }else{

@@ -62,7 +62,6 @@
 					if(str.startsWith('exit')){
 						var socket=getCur();
 						info(getAddr(socket)+' exit\r\n$>> ');
-						$.sockets.pop()
 						var socket=getCur();
 						if(socket==null) {
 							title();
@@ -105,10 +104,12 @@
 					}
 					socket.onclose = function(evt) { 
 			            console.info(event);
+			            $.sockets.pop();
 			        }
 					socket.onerror = function(evt) { 
 						console.info(evt);
 						info('$>> connect '+addr+' error\r\n$>> ');
+						$.sockets.pop();
 			        }
 					return socket;
 				}
@@ -120,19 +121,32 @@
 				    	 var cmd=splits[splits.length-1].replace(/[$]>>\s*/ig,'').replace(';$','');
 				    	 if(cmd=='clear'){
 				    	 	clear('$>> ');
-				    	 }else if(cmd==''||cmd.match(/[$]>>\s*/ig)||(getCur()==null&&cmd=='exit')){
+				    	 }else if(cmd==''||cmd.match(/[$]>>\s*/ig)){
 				    	 	if($.info_timer){
 								window.clearTimeout($.info_timer);
 							}
 							$.info_timer=setTimeout(function(){
 								info('$>> ');
 							},50);
+							
+				    	 }else if(getCur()==null&&cmd=='exit'){
+				    		 window.exit();
 				    	 }else{
 				    	 	if(cmd.match(/(^telnet)/g)){
 				    	 		var ip=cmd.split(/\s+/g)[1];
 				    	 		var port=cmd.split(/\s+/g)[2];
-				    	 		connect(ip+':'+port);
-				    	 		clear();
+				    	 		if(ip&&port&&port.match(/\d+/g)){
+				    	 			connect(ip+':'+port);
+				    	 			clear();
+				    	 		}else{
+				    	 			if($.info_timer){
+										window.clearTimeout($.info_timer);
+									}
+									$.info_timer=setTimeout(function(){
+										info('$>> telnet commond format error\r\n$>> ');
+									},50);
+				    	 		}
+				    	 		
 				    	 	}else{
 					    	 	var socket=getCur();
 					    	 	if(socket==null){
@@ -161,7 +175,7 @@
 			window.telnet=function(addr){
 				$('#telnet').telnet(addr);	
 			}
-			window.close=function(){
+			window.cancel=function(){
 				for(var i in $.sockets){
 					$.sockets[i].send('exit');
 				}

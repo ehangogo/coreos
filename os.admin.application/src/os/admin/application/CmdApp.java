@@ -11,7 +11,7 @@ import org.osgi.service.component.annotations.Reference;
 import os.admin.mgr.ClusterMgr;
 import os.admin.mgr.NetworkWrapper;
 import os.core.api.CoreOS;
-import os.core.tools.JarUtil;
+import os.core.tools.BundleUtil;
 import osgi.enroute.debug.api.Debug;
 
 // 系统命令行管理组件
@@ -117,7 +117,7 @@ public class CmdApp {
 	
 	// 集群管理
 	public void install(String location){
-		location=JarUtil.getRepertPath(location);
+		location=BundleUtil.getRepPath(location);
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
 			cluser.install(location, -1L);
@@ -127,14 +127,14 @@ public class CmdApp {
 		
 	}
 	public void install(String addr,String location){
-		location=JarUtil.getRepertPath(location);
+		location=BundleUtil.getRepPath(location);
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
 			cluser.install(addr, location);
 		}
 	}
 	public void install(String location,long num){
-		location=JarUtil.getRepertPath(location);
+		location=BundleUtil.getRepPath(location);
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
 			cluser.install(location, num);
@@ -235,40 +235,6 @@ public class CmdApp {
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
 			cluser.call(addr,namespace, method, args);
-		}
-	}
-	
-	// 其他接口
-	public void refresh(String... args){
-		ClusterMgr cluser=this.getManager();
-		if(cluser!=null){
-			cluser.refresh(args);
-		}else{
-			coreos.refresh(args);
-		}
-	}
-	public void resolve(String... args){
-		ClusterMgr cluser=this.getManager();
-		if(cluser!=null){
-			cluser.resolve(args);
-		}else{
-			coreos.resolve(args);
-		}
-	}
-	public void startLevel(String... args){
-		ClusterMgr cluser=this.getManager();
-		if(cluser!=null){
-			cluser.startLevel(args);
-		}else{
-			coreos.startLevel(args);
-		}
-	}
-	public void bundleLevel(String... args){
-		ClusterMgr cluser=this.getManager();
-		if(cluser!=null){
-			cluser.bundleLevel(args);
-		}else{
-			coreos.bundleLevel(args);
 		}
 	}
 	public ClusterMgr getManager(){
