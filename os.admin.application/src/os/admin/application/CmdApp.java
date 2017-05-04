@@ -68,7 +68,7 @@ public class CmdApp {
 	public void services(){
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
-			cluser.nodes();
+			cluser.services();
 		}else{
 			coreos.call(NAMESPACE,"services");
 		}
