@@ -43,28 +43,17 @@ public class CmdApp {
 	@Reference void setCoreOS(CoreOS coreos){
 		this.coreos=coreos;
 	}
-	// 输出流
-	private ThreadLocal<PrintStream> outMap=new ThreadLocal<>();
-	public void setOut(PrintStream out){
-		outMap.set(out);
-	}
-	public PrintStream getOut(){
-		PrintStream out=outMap.get();
-		if(out==null){
-			return System.out;
-		}else{
-			return out;
-		}
-	}
+	
 	// 命令行指令
 	String[] cmds;
 	@Activate void start(ComponentContext component) {
 		this.cmds=(String[])component.getProperties().get(Debug.COMMAND_FUNCTION);
 	}
-	
+	// 输入流
+	PrintStream out=System.out;
 	// 命令行接口
 	public void help(){
-		Stream.of(cmds).forEach(getOut()::println);
+		Stream.of(cmds).forEach(out::println);
 	}
 	
 	private String NAMESPACE="os.core.provider.CoreShell";
@@ -249,7 +238,6 @@ public class CmdApp {
 		if(target!=null){
 			NetworkWrapper network=new NetworkWrapper(target);
 			ClusterMgr cluster=new ClusterMgr(network);
-			cluster.setOut(getOut());
 			return cluster;
 		}
 		return null;

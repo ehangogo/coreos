@@ -22,10 +22,6 @@ public class ClusterMgr {
 	
 	// 输入流
 	PrintStream out=System.out;
-	public void setOut(PrintStream out){
-		this.out=out;
-		this.manager.setOut(out);
-	}
 	public ClusterMgr(NetworkWrapper network){
 		this.network=network;
 		// 组件管理:安装,卸载等操作

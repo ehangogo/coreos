@@ -28,9 +28,7 @@ public class BundleMgr {
 	
 	// 输入流
 	PrintStream out=System.out;
-	public void setOut(PrintStream out){
-		this.out=out;
-	}
+	
 	// 异常恢复
 	public Map<String,Long> checktab=CheckJob.checktab;
 	// 构造函数

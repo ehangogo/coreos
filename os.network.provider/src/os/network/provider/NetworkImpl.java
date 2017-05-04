@@ -43,9 +43,7 @@ public class NetworkImpl implements Network{
 	
 	// 输出流
 	private PrintStream out=System.out;
-	public void setOut(PrintStream out){
-		this.out=out;
-	}
+	
 	@Activate void start(){
 		// hock
 		add(this);
