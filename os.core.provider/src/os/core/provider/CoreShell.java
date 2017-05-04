@@ -52,18 +52,8 @@ public class CoreShell {
 	}
 	
 	// 输出流
-	ThreadLocal<PrintStream> outMap=new ThreadLocal<>();
-	public void setOut(PrintStream out){
-		outMap.set(out);
-	}
-	public PrintStream getOut(){
-		PrintStream out=outMap.get();
-		if(out==null){
-			return System.out;
-		}else{
-			return out;
-		}
-	}
+	PrintStream out=System.out;
+	
 	
 	// 命令集合
 	String[] cmds;
@@ -72,7 +62,7 @@ public class CoreShell {
 	}
 	// 命令行接口
 	public void help(){
-		Stream.of(cmds).forEach(getOut()::println);
+		Stream.of(cmds).forEach(out::println);
 	}
 	
 	// 管理接口
@@ -245,9 +235,9 @@ public class CoreShell {
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
 		if(port!=null){
-			getOut().println(String.format("[%s]->[%s:%s-%s]->[%s(%s)]->[%s]",time,address,port,"call",namespace,params,res));
+			out.println(String.format("[%s]->[%s:%s-%s]->[%s(%s)]->[%s]",time,address,port,"call",namespace,params,res));
 		}else{
-			getOut().println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,params,res));
+			out.println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,params,res));
 		}
 	}
 	
@@ -265,9 +255,9 @@ public class CoreShell {
 			version=version.substring(0, index);
 		}
 		if(port!=null){
-			getOut().println(String.format("[%s]->[%s:%s-%s]->[%s:%s]->[success]",time,address,port,action,name,version));
+			out.println(String.format("[%s]->[%s:%s-%s]->[%s:%s]->[success]",time,address,port,action,name,version));
 		}else{
-			getOut().println(String.format("[%s]->[%s-%s]->[%s:%s]->[success]",time,address,action,name,version));
+			out.println(String.format("[%s]->[%s-%s]->[%s:%s]->[success]",time,address,action,name,version));
 		}
 	}
 	void print(List<String> lines){
@@ -338,7 +328,7 @@ public class CoreShell {
 		
 	}
 	void stdout(String format,Object[] args){
-		getOut().println(String.format(format, args));
+		out.println(String.format(format, args));
 	}
 	String version(String version){
 		String v=version;
@@ -380,7 +370,7 @@ public class CoreShell {
 			return level;
 		}else{
 			coreos.startLevel(args[0]);
-			getOut().println("设置启动级别:"+args[0]);
+			out.println("设置启动级别:"+args[0]);
 			return null;
 		}
 	}
@@ -390,7 +380,7 @@ public class CoreShell {
 			return level;
 		}else{
 			coreos.bundleLevel(args[0]);
-			getOut().println("设置Bundle启动级别:"+args[0]);
+			out.println("设置Bundle启动级别:"+args[0]);
 			return null;
 		}
 	}
@@ -408,6 +398,6 @@ public class CoreShell {
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
 		String hostname=HostUtil.address();
-		getOut().println(String.format("[%s]-%s->%s [%s:%s] success",time,hostname,action,name,version));
+		out.println(String.format("[%s]-%s->%s [%s:%s] success",time,hostname,action,name,version));
 	}
 }

@@ -23,19 +23,7 @@ import osgi.enroute.debug.api.Debug;
 			  },immediate=true)
 public class RouteCmd {
 	
-	// 输出流
-	private ThreadLocal<PrintStream> outMap=new ThreadLocal<>();
-	public void setOut(PrintStream out){
-		outMap.set(out);
-	}
-	public PrintStream getOut(){
-		PrintStream out=outMap.get();
-		if(out==null){
-			return System.out;
-		}else{
-			return out;
-		}
-	}
+	
 	private ZooKeeper zk;
 
 	@Activate
@@ -103,6 +91,6 @@ public class RouteCmd {
 		stdout(line_fmt+"+",chs.toArray());
 	}
 	void stdout(String format,Object[] args){
-		getOut().println(String.format(format, args));
+		System.out.println(String.format(format, args));
 	}
 }
