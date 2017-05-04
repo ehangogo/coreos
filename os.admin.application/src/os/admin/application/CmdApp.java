@@ -242,6 +242,7 @@ public class CmdApp {
 		}
 	}
 	public ClusterMgr getManager(){
+		//getService是coreOS自定义函数，用来返回目标组件的对象
 		Object target=this.coreos.getService("os.network.api.Network");
 		if(target!=null){
 			NetworkWrapper network=new NetworkWrapper(target);

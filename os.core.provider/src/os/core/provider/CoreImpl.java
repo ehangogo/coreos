@@ -41,19 +41,20 @@ import os.core.tools.ReflectUtil;
 @Component(name="os.core",immediate=true)
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class CoreImpl implements CoreOS{
-	
+	//组件的实体，jar相关的操作接口，包括安装卸载启动等接口
 	BundleContext context=null;
 	
 	// 本地服务
+	//HashSet<>存放对象，set是集合接口，HashSet进行了实现
 	Set<ServiceInfo> services=new HashSet<>();
 	// 本地组件
 	Set<BundleInfo>  bundles=new HashSet<>();
 		
-	// 启动方法,参数componet和context由OSGI容器注入
+	// 启动方法,参数component和context由OSGI容器注入，@Active初始化，@Reference解决对象依赖，OSGi注入
 	@Activate void start(ComponentContext componet,BundleContext context) {
 		
 		this.context=context;
-		// 监听本地节点的安装和卸载
+		// 监听本地节点组件的安装和卸载
 		this.context.addBundleListener(new BundleListener(){
 			@Override
 			public void bundleChanged(BundleEvent event) {
@@ -67,6 +68,7 @@ public class CoreImpl implements CoreOS{
 				}
 			}
 		});
+		//查询当前bundle，加入bundles变量里面
 		for(Bundle bundle:context.getBundles()){
 			BundleInfo bleInfo=BleInfo(bundle);
 			if(bleInfo!=null){
@@ -95,6 +97,7 @@ public class CoreImpl implements CoreOS{
 				}
 			}
 		});
+		//查询当前服务加入services变量里面
 		try{
 			ServiceReference[] refs = context.getAllServiceReferences(null,null);
 	        if(refs != null){
@@ -108,6 +111,8 @@ public class CoreImpl implements CoreOS{
 	        		}
 	            }
 	        }
+	        
+	        //把core的方法服务加进去，是个bug
 	        String id="0";
 	        try{
 	        	id=componet.getServiceReference().getProperty("service.id").toString();
@@ -175,20 +180,24 @@ public class CoreImpl implements CoreOS{
 	}
 	
 	// 查询接口
+	//当前的所有组件的信息
 	@Override
 	public List<BundleInfo> getBundles(){
 		List list=Arrays.asList(bundles.toArray());
 		return list;
 	}
 	@Override
+	//当前所有服务的信息
 	public List<ServiceInfo> getServices() {
 		List list=Arrays.asList(services.toArray());
 		return list;
 	}
+	//组件仓库的组件信息
 	@Override
 	public List<BundleInfo> getRepertories() {
 		return BundleUtil.getRepList();
 	}
+	//根据当前环境组件信息和类路径找到该服务
 	@Override
 	public Object getService(String namespace) {
 		// 本地查找
@@ -207,10 +216,11 @@ public class CoreImpl implements CoreOS{
 		if(context!=null){
 			// 根据类名查找对应的服务
 			ServiceTracker tracker = new ServiceTracker(context,namespace,null);tracker.open();
+			//获取该服务或者说component的全局对象
 			Object service =tracker.getService();
 				// 反射调用服务
 				if(service!=null){
-					// 目标类
+					// 目标类,clazz是类对象
 					Class clazz=service.getClass();
 					// 目标参数
 			    	List params=new ArrayList();
@@ -236,15 +246,17 @@ public class CoreImpl implements CoreOS{
 	
 		return null;
 	}
-	Object rmtCall(String namespace,String service,Object... args) {
+	Object rmtCall(String namespace,String method,Object... args) {
 		// 获取网卡
 		ServiceTracker tracker = new ServiceTracker(context,"os.network.api.Network",null);tracker.open();
+		//获取网卡的全局对象
 		Object network =tracker.getService();
 		// 通过网卡调用服务
 		if(network!=null){
 			try{
+				//network.getClass()获取类对象
 				Method func=network.getClass().getMethod("call",new Class[]{String.class,String.class,Object[].class});
-				return func.invoke(network, namespace,service,args);
+				return func.invoke(network, namespace, method, args);
 			}catch(Exception e){
 				throw new RuntimeException("远程调用错误",e);
 			}
@@ -297,6 +309,7 @@ public class CoreImpl implements CoreOS{
 	    	// save
 	    	ServiceInfo srvInfo=new ServiceInfo();
 			srvInfo.id=id;
+			///服务的名字就是类路径就是类的名字
 	    	srvInfo.name=clazz.getName();
 	    	srvInfo.status="RUNNING";
 	    	srvInfo.methods=methods;
@@ -341,7 +354,7 @@ public class CoreImpl implements CoreOS{
 	    		if(clazz.getName().equals("org.apache.felix.gogo.runtime.threadio.ThreadIOImpl")){
 	    			return null;
 	    		}
-	    		ms=clazz.getDeclaredMethods();
+	    		ms=clazz.getDeclaredMethods( );
 	    	}catch(Exception e){
 	    		ms=clazz.getMethods();
 	    	}finally{}
@@ -397,6 +410,7 @@ public class CoreImpl implements CoreOS{
 			
 			ServiceReference[] list=null;
 			try{
+				// 获取组件中的由@component标志 的类，即是service
 				list=bundle.getRegisteredServices();
 			}catch(Exception e){};
 			if(list!=null){

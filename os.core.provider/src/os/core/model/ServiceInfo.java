@@ -11,7 +11,7 @@ public class ServiceInfo extends DTO{
 
 	// 服务ID
 	public String id;
-	// 服务名称
+	// 服务名称，类路径，类的名字
 	public String name;
 	// 服务状态
 	public String status;

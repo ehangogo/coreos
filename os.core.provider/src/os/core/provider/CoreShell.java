@@ -21,7 +21,12 @@ import os.core.model.BundleInfo;
 import os.core.model.ServiceInfo;
 import os.core.tools.HostUtil;
 import osgi.enroute.debug.api.Debug;
-
+//@Component 组件注解
+//name 服务的别名
+//property 服务的配置属性
+//immediate 表示当该类依赖的对象都满足时，是否马上初始化new出这个类对象，而不是等到别的地方使用时，才进行初始化
+//service 指明服务实现的接口类，有的不用再写，没有的直接写自己类就行
+//作用就是能够利用getService获取这个服务 
 @Component(name="os.shell",property = { 
 		Debug.COMMAND_SCOPE + "=core",
 		Debug.COMMAND_FUNCTION + "=help",

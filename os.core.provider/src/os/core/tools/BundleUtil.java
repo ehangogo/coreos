@@ -125,6 +125,8 @@ public class BundleUtil {
 	// 组件仓库列表
 	public static List<BundleInfo> getRepList(){
 		 List<BundleInfo> list=new ArrayList<>();
+		 //从环境变量中读取REPERTOTY_PATH,组建仓库路径
+		 //ConfigUtil.get中读取顺序，环境变量，启动参数，配置文件
 		 Path path=Paths.get(ConfigUtil.get(ConfigUtil.REPERTORY_PATH));
 		 try{
 			 Files.list(path).filter(file->{
@@ -148,6 +150,7 @@ public class BundleUtil {
 		// 检测location对应的路径是否存在组件
 		boolean local=true;
 		try{
+			//检测location是否是一个网络中的地址，网络不存在，抛出异常
 			new URL(location).openStream();
 			local=false;
 			return location;

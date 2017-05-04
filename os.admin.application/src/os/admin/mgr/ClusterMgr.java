@@ -191,19 +191,23 @@ public class ClusterMgr {
 		print(infos);
 		
 	}
+	//设置打印的格式
 	void print(List<String> lines){
 		if(lines==null||lines.size()==1){
 			System.out.println("empty data to print");
 			return;
 		}
+		//设置每列的最大长度
 		List<Integer> maxlen=new ArrayList<>();
 		for(String row:lines){
 			String args[]=row.split("[|]");
 			for(int i=0;i<args.length;i++){
 				int len=args[i].getBytes().length;
+				//第一行没有maxlength
 				if(maxlen.size()<args.length){
 					maxlen.add(len);
 				}else{
+					//比上一行该列的长度长就修改maxlen的值，并加两个长度
 					Integer max=maxlen.get(i);
 					if(max<len){
 						maxlen.set(i,len+2);
@@ -211,6 +215,7 @@ public class ClusterMgr {
 				}
 			}
 		}
+		//返回remove删除掉的第一行的字符串即表头
 		String header=lines.remove(0);
 		
 		String line_fmt="";

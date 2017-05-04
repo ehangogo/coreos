@@ -29,8 +29,11 @@ import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 /**
  * 网卡模块
  */
+//WEBService注解，这个引入Jetty的jar包，Jetty是嵌入式的HTTP服务器，添加这个注解，在resolve的时候，
+//会自动引入Jetty的jar包,否则需要自己写入
 @RequireWebServerExtender
 @Component(name = "os.network",property={"service.exported.interfaces=*"},immediate=true)
+//@SuppressWarnings设置JDK编译器注解，去掉代码中类型转换的警告，不影响代码执行
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class NetworkImpl implements Network{
 	
@@ -103,7 +106,7 @@ public class NetworkImpl implements Network{
 		String port=host.port;
 		List<ServiceInfo> services=new ArrayList<>();
 		// 服务信息
-		this.coreos.getServices().stream().forEach(service->{
+		this.coreos.getServices().forEach(service->{
 			service.ip=ip;
 			service.port=port;
 			services.add(service);
@@ -118,7 +121,7 @@ public class NetworkImpl implements Network{
 		String port=host.port;
 		List<BundleInfo> bundles=new ArrayList<>();
 		// 组件信息
-		this.coreos.getBundles().stream().forEach(bundle->{
+		this.coreos.getBundles().forEach(bundle->{
 			bundle.ip=ip;
 			bundle.port=port;
 			bundles.add(bundle);
@@ -136,9 +139,11 @@ public class NetworkImpl implements Network{
 	public <T> T call(String namespace,String method,Object... args){
 		
 		// 服务查找
-		List<Network> targets=new ArrayList<>(); 
+		List<Network> targets=new ArrayList<>();
+		//当前的所有network，即网卡对象
 		List<Network> routes=this.getRoutes();
 		for(Network net:routes){
+			//获取当前环境所有服务
 			List<ServiceInfo> list=net.getServices();
 			for(ServiceInfo srv:list){
 				if(srv.name.equals(namespace)){
