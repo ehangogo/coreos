@@ -71,15 +71,17 @@ public class CmdApp {
 	
 	// 集群信息
 	public void nodes(){
+		//初始化ClusterMgr，传值network对象
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
+			//BundleMgr得到主机数->完成字符串拼接->打印
 			cluser.nodes();
 		}
 	}
 	public void services(){
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
-			cluser.nodes();
+			cluser.services();
 		}else{
 			coreos.call(NAMESPACE,"services");
 		}

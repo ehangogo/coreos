@@ -180,6 +180,7 @@ public class ClusterMgr {
 	}
 	
 	public void nodes(){
+		//HostInfo host=net.getHostInfo();调用网卡对象主机信息函数
 		List<HostInfo> res=manager.getNodes();
 		if(res==null||res.size()==0){return;};
 		List<String> infos=new ArrayList<>();
