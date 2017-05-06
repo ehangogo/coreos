@@ -15,20 +15,11 @@ public class DebugApplication  {
 	public static void main(String args[]) throws Exception{
 		// E:\osgi5\coreos\os.debug.application
 		String cur=System.getProperty("user.dir");
-		
-		
-		Path target2=Paths.get(cur,"dist/coreos/master/share");
-		Path target3=Paths.get(cur,"dist/coreos/slave/share");
-		
+		Path target=Paths.get(cur,"dist/coreos/share");
 		System.out.println("clear share dir");
-		
-		Files.list(target2).forEach(file->{
+		Files.list(target).forEach(file->{
 			file.toFile().deleteOnExit();
 		});
-		Files.list(target3).forEach(file->{
-			file.toFile().deleteOnExit();
-		});
-		
 		System.out.println("clear lib dir");
 		
 		
@@ -52,11 +43,8 @@ public class DebugApplication  {
 	    for(File file:jarFiles){  
         	System.out.println("copy file:"+file.toString());
         	String name=file.getName();
-        	
         	// copy to share
-        	Files.copy(file.toPath(),Paths.get(target2.toString(),name));
-        	Files.copy(file.toPath(),Paths.get(target3.toString(),name));
-			
+        	Files.copy(file.toPath(),Paths.get(target.toString(),name));
 	     }  
 		System.out.println("finish");
 		

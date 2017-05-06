@@ -158,10 +158,7 @@ public class NetworkImpl implements Network{
 			for(Network net:targets){
 				if(net.equals(this)){
 					try{
-						DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
-						String time=format.format(new Date());
-						HostInfo host=this.getHostInfo();
-						out.println(String.format("[%s]->[%s:%s]->[%s:%s]", time,host.ip,host.port,namespace,method));
+						log(namespace,method);
 						return this.coreos.call(namespace, method, args);
 					}catch(Exception e){
 						e.printStackTrace();
@@ -185,7 +182,16 @@ public class NetworkImpl implements Network{
 			return res;
 		}
 	}
-	
+	public void log(String namespace,String method){
+		if(namespace.matches("^(os.core|os.network|os.admin|os.route).*")){
+			return;
+		}
+		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+		String time=format.format(new Date());
+		HostInfo host=this.getHostInfo();
+		out.println(String.format("[%s]->[%s:%s]->[%s:%s]", time,host.ip,host.port,namespace,method));
+		
+	}
 	@Override  
 	public boolean equals(Object other) {
 		Network o=null;

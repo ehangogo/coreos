@@ -24,9 +24,9 @@ public class CheckJob{
 		new Thread(new Runnable(){
 			public void run(){
 				while(true){
-					// ˯5s
+					// ˯15s
 					try{
-						Thread.sleep(5000);
+						Thread.sleep(15000);
 					}catch(Exception e){}
 					if(finish==true){
 						finish=false;
