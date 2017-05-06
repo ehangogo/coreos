@@ -16,7 +16,7 @@ import os.core.api.CoreOS;
  * 日志记录类
  */
 @Component(name = "os.moudel.log",service=LogDB.class)
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({"rawtypes","unchecked"})
 public class LogDB{
 	CoreOS coreos=null;
 	@Reference void setCoreOS(CoreOS coreos){
@@ -26,7 +26,7 @@ public class LogDB{
 		return this.coreos.call("os.moudel.db.api.DBase","query","log",map);
 	}
 	public void info(String level, String user, String ip,String msg) {
-		List<String> param=new ArrayList<>();
+		List param=new ArrayList<>();
 		param.add(level);
 		param.add(user.split(":")[0]);
 		param.add(user.split(":")[1]);
@@ -38,8 +38,8 @@ public class LogDB{
 		update(sql,param);
 	}
 	
-	private long update(String sql,List param){
-		return this.coreos.call("os.moudel.db.api.DBase","excute",sql,param);
+	private void update(String sql,List param){
+		this.coreos.call("os.moudel.db.api.DBase","excute",sql,param);
 	}
 	
 }

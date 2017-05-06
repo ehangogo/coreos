@@ -17,7 +17,9 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import os.core.api.CoreOS;
+import os.core.conf.Config;
 import os.core.model.BundleInfo;
+import os.core.model.ConfigInfo;
 import os.core.model.ServiceInfo;
 import os.core.tools.HostUtil;
 import osgi.enroute.debug.api.Debug;
@@ -37,10 +39,12 @@ import osgi.enroute.debug.api.Debug;
 		Debug.COMMAND_FUNCTION + "=install",
 		Debug.COMMAND_FUNCTION + "=start",
 		Debug.COMMAND_FUNCTION + "=stop",
+		Debug.COMMAND_FUNCTION + "=restart",
 		Debug.COMMAND_FUNCTION + "=uninstall",
 		Debug.COMMAND_FUNCTION + "=repertories",
 		Debug.COMMAND_FUNCTION + "=store",
-		Debug.COMMAND_FUNCTION + "=update"
+		Debug.COMMAND_FUNCTION + "=update",
+		Debug.COMMAND_FUNCTION + "=config"
 	},service=CoreShell.class,immediate=true)
 public class CoreShell {
 	
@@ -86,7 +90,32 @@ public class CoreShell {
 		Bundle bundle=coreos.update(nameVersion);
 		print("update", bundle);
 	}
-
+	public void restart(String nameVersion) throws BundleException {
+		Bundle bundle=coreos.stop(nameVersion);
+		bundle=coreos.start(nameVersion);
+		print("restart", bundle);
+	} 
+	public void config() throws BundleException {
+		List<ConfigInfo> res=coreos.listConf();
+		if(res==null||res.size()==0){return;};
+		List<String> infos=new ArrayList<>();
+		infos.add("id|key|value");
+		for(int i=0;i<res.size();i++){
+			ConfigInfo conf=res.get(i);
+			String key=conf.key;
+			String val=conf.value;
+			infos.add(String.format("%s|%s|%s",i+1,key,val));
+		}
+		print(infos);
+	}
+	public void config(String key){
+		String val=coreos.getConf(key, null);
+		this.stdout("get:%s->%s",new Object[]{key,val});
+	}
+	public void config(String key,String val){
+		Config.set(key, val);
+		this.stdout("set:%s->%s",new Object[]{key,val});
+	}
 	
 	// ²éÑ¯½Ó¿Ú
 	public void bundles(){

@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import os.core.conf.Config;
 import os.core.model.BundleInfo;
 
 /**
@@ -127,7 +128,7 @@ public class BundleUtil {
 		 List<BundleInfo> list=new ArrayList<>();
 		 //从环境变量中读取REPERTOTY_PATH,组建仓库路径
 		 //ConfigUtil.get中读取顺序，环境变量，启动参数，配置文件
-		 Path path=Paths.get(ConfigUtil.get(ConfigUtil.REPERTORY_PATH));
+		 Path path=Paths.get(Config.get(Config.REPERTORY_PATH));
 		 try{
 			 Files.list(path).filter(file->{
 				 String name=file.getFileName().toString();
@@ -159,7 +160,7 @@ public class BundleUtil {
 		}
 		
 		// 检测仓库下是否存在相应组件
-		String bath=ConfigUtil.get(ConfigUtil.REPERTORY_PATH);
+		String bath=Config.get(Config.REPERTORY_PATH);
 		if(local){
 			File file=Paths.get(bath,location).toFile();
 			if(file.exists()){
@@ -176,7 +177,7 @@ public class BundleUtil {
 	
 	public static void main(String args[]) throws Exception{
 		 List<BundleInfo> list=BundleUtil.getRepList();
-		 list.stream().forEach(row->{
+		 list.forEach(row->{
 			 System.out.println(row);
 		 });
 	}

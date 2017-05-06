@@ -15,7 +15,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.sql.DataSource;
 
@@ -32,7 +31,7 @@ import os.moudel.db.api.DBase;
 public class DBaseImpl implements DBase {
 
 	// 数据源
-	DataSource db=new JDBCPool();
+	DataSource db=null;
 	
 	// 数据连接对象
 	public Connection getConnect(){
@@ -44,10 +43,12 @@ public class DBaseImpl implements DBase {
 		}
 		return conn;
 	}
-	
 	@Activate
 	public void start(){
 		this.init(false);
+		if(db==null){
+			db=new DBPool();
+		}
 	}
 	
 	public List<Map<String,Object>> query(String sql) {
@@ -322,7 +323,7 @@ public class DBaseImpl implements DBase {
 		// 读取SQL文件
 		List<String> lines=new ArrayList<>();
 		try{
-			InputStream input=JDBCPool.class.getResourceAsStream("schema.sql");
+			InputStream input=DBaseImpl.class.getResourceAsStream("schema.sql");
 	        BufferedReader read= new BufferedReader(new InputStreamReader(input));
 	        String line;
 	         while((line=read.readLine())!=null){
@@ -360,12 +361,14 @@ public class DBaseImpl implements DBase {
 	private Connection mrgConn=null;
 	private Connection getMgrConn(){
 		if(mrgConn==null){
-			Properties config=new Properties();
 			try {
-		        config.load(JDBCPool.class.getResourceAsStream("db.properties"));
-		        Class.forName(config.getProperty("DRIVER"));
-		        this.mrgConn =  DriverManager.getConnection(config.getProperty("URL")+"?useUnicode=true&characterEncoding=UTF-8",
-		                 config.getProperty("USER"),config.getProperty("PASSWORD"));
+				String url=DBConfig.rooturl();
+				String driver=DBConfig.driver();
+				String username=DBConfig.username();
+				String password=DBConfig.password();
+				
+				Class.forName(driver);
+				this.mrgConn =  DriverManager.getConnection(url,username,password);
 		    } catch (Exception e) {
 		    	e.printStackTrace();
 		        throw new ExceptionInInitializerError();

@@ -8,6 +8,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 
 import os.core.model.BundleInfo;
+import os.core.model.ConfigInfo;
 import os.core.model.ServiceInfo;
 
 /**
@@ -85,6 +86,16 @@ public interface CoreOS {
 	 * @return
 	 */
 	public BundleContext getContext();
+	/**
+	 * 获取系统配置接口
+	 * @param key
+	 * @param def
+	 * @return
+	 */
+	public String setConf(String key,String val);
+	public String getConf(String key,String def);
+	public List<ConfigInfo> listConf();
+	
 	/**
 	 * 获取某个服务
 	 * @return

@@ -42,4 +42,7 @@ JPM-Command:					debug
 
 
 -runstorage:            generated/node8084
--runproperties:         org.osgi.service.http.port=8084
+
+-runproperties: org.osgi.service.http.port=8084
+-runvm: -Dos.host.ip=127.0.0.1\n\
+	-Dos.host.name=node8084\n\

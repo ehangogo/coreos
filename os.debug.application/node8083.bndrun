@@ -42,4 +42,7 @@ JPM-Command:					debug
 	
 
 -runstorage:            generated/node8083
--runproperties:         org.osgi.service.http.port=8083
+
+-runproperties: org.osgi.service.http.port=8083
+-runvm: -Dos.host.ip=127.0.0.1\n\
+	-Dos.host.name=node8083\n\

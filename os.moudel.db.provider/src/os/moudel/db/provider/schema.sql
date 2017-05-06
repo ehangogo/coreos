@@ -1,4 +1,8 @@
 
+USE `mysql`;
+UPDATE USER SET `host`='%' WHERE USER='root';
+FLUSH PRIVILEGES;
+
 CREATE DATABASE IF NOT EXISTS `coreos`;
 
 USE `coreos`;
@@ -182,7 +186,6 @@ CREATE TABLE IF NOT EXISTS  `user` (
   `realname` VARCHAR(100) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=INNODB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
-
 
 INSERT INTO `user` (`id`, `password`, `username`, `email`, `role`, `time`, `realname`) VALUES('1','admin','admin','524907699@qq.com','admin','2017-04-12 17:25:12','尹行欣');
 INSERT INTO `mn_info` (`id`, `name`, `age`, `city`, `address`, `phone`, `ill`, `profession`, `sex`, `time`) VALUES('1','尹行欣','18','秦皇岛','燕山大学','15032382685','无','前端工程师','女','2017-04-13 14:12:13');

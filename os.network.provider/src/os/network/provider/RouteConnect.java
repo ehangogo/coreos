@@ -6,52 +6,35 @@ import java.util.Hashtable;
 
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
-
+/**
+ * 
+ * 路由连接对象
+ * @author 尹行欣
+ *
+ */
 public class RouteConnect {
 	
-	// 路由地址
-	private String addr=null;
+	// OSGI配置管理对象
+	ConfigurationAdmin cm=null;
+	public RouteConnect(ConfigurationAdmin cm){
+		this.cm=cm;
+	}
 	
-	// 本机IP地址和端口
-	private String ip=null;
-	private String port=null;
+	// 主机IP端口信息
+	String ip=null;
+	String port=null;
 	
-	public RouteConnect(String ip,String port){
+	// 链接请求
+	public void connect(String route_url,String ip,String port){
+		
 		this.ip=ip;
 		this.port=port;
 		
-		 String addr=System.getenv().get("OS_ROUTE");
-		 if(addr==null||addr.equals("")){
-			 addr=System.getProperty("os.route");
-		 }
-		 if(addr==null||addr.equals("")){
-			 addr="localhost:6789";
-		 }
-		 this.addr=addr;
-	}
-	// 链接请求
-	public void connect(ConfigurationAdmin cm){
 		new Thread(new Runnable(){
 			@Override
 			public void run() {
-				
-				// 检测路由连接直至可用
-				String route_ip=addr.split(":")[0];
-				String route_port=addr.split(":")[1];
-				while(true){
-					try{
-						new Socket(route_ip,Integer.parseInt(route_port));
-						break;
-					} catch (Exception e){
-						System.out.println("connect route error");
-						try {
-							Thread.sleep(3000);
-						} catch (Exception e1) {
-							e1.printStackTrace();
-						}
-					}
-				}
-				
+				// 检测route_url是否可用
+				ping(route_url);
 				// 更新连接配置发起连接
 				try{
 					Configuration configuration = cm.getConfiguration("org.amdatu.remote.discovery.zookeeper","?");
@@ -60,7 +43,7 @@ public class RouteConnect {
 						if(map==null){map=new Hashtable<String, Object>();}
 						
 						// 一、zookeeper服务端地址
-						map.put("org.amdatu.remote.discovery.zookeeper.connectstring",addr);
+						map.put("org.amdatu.remote.discovery.zookeeper.connectstring",route_url);
 						
 						// 二、需要存储的信息
 						// 需要往zookeeper服务端存储的信息,这些信息包含了本网卡的通讯所需的基本信息
@@ -95,9 +78,27 @@ public class RouteConnect {
 						configuration.update(map);
 					}
 				} catch (Exception e) {}
+				
 			}
 		}).start();
-	}
 		
+		
+	}
+	// 检测网络是否可用到达
+	public void ping(String url){
+		while(true){
+			String route_ip=url.split(":")[0];
+			String route_port=url.split(":")[1];
+			try{
+				new Socket(route_ip,Integer.parseInt(route_port));
+				break;
+			}catch (Exception e){
+				System.out.println(String.format("network[%s:%s]->route[%s:%s] connect error",ip,port,route_ip,route_port));
+			}
+			try{
+				Thread.sleep(3000);
+			}catch(Exception e){};
+		}
+	}
 	
 }

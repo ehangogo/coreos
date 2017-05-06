@@ -19,6 +19,7 @@ import org.osgi.service.component.annotations.ReferenceCardinality;
 import org.osgi.service.component.annotations.ReferencePolicy;
 
 import os.core.api.CoreOS;
+import os.core.conf.Config;
 import os.core.model.BundleInfo;
 import os.core.model.HostInfo;
 import os.core.model.ServiceInfo;
@@ -37,31 +38,40 @@ import osgi.enroute.webserver.capabilities.RequireWebServerExtender;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class NetworkImpl implements Network{
 	
+	// 依赖成员变量
+	// 由OSGI容器注入
+	@Reference
+	CoreOS coreos=null;
+	@Reference
+	ConfigurationAdmin cm=null;
+	
+	// 通讯配置相关变量
+	String ip=HostUtil.address();
+	String port=HostUtil.port();
+	String hostname=HostUtil.hostname();
+	String route_url=Config.get(Config.ROUTE_URL);
 	
 	// 路由缓存
 	private Set<Network> routes = new HashSet<>();
 	
 	// 输出流
 	private PrintStream out=System.out;
-	
+	// 连接路由对象
+	RouteConnect route=null;
 	@Activate void start(){
+		if(this.route==null){
+			this.route=new RouteConnect(this.cm);
+			this.connect(route_url);
+		}
 		// hock
-		add(this);
+		if(this.routes.size()==0){
+			this.add(this);
+		}
 	}
 	
-	// 系统内核
-	CoreOS coreos=null;
-	@Reference void setCoreOS(CoreOS coreos){
-		this.coreos=coreos;
-	}
-	// 连接路由
-	@Reference void connect(ConfigurationAdmin cm) {
-		HostInfo host=this.getHostInfo();
-		String ip=host.ip;
-		String port=host.port;// http端口
-		RouteConnect route=new RouteConnect(ip,port);
-		route.connect(cm);
-		
+	// 连接指定url的路由组件
+	public void connect(String url){
+		route.connect(url,ip,port);
 	}
 	
 	// 添加网卡
@@ -87,21 +97,15 @@ public class NetworkImpl implements Network{
 	@Override
 	public HostInfo getHostInfo(){
 		// 主机信息
-		String ip=HostUtil.address();
-		String hostname=HostUtil.hostname();
-		String port=System.getProperty("org.osgi.service.http.port","8080");// http端口
-		HostInfo host=new HostInfo();
-		host.ip=ip;
-		host.hostname=hostname;
-		host.port=port;
+		String ip=this.ip;
+		String hostname=this.hostname;
+		String port=this.port;
+		HostInfo host=new HostInfo(ip,port,hostname);
 		return host;
 	}
 	@Override
 	public List<ServiceInfo> getServices() {
-		// 主机信息
-		HostInfo host=this.getHostInfo();
-		String ip=host.ip;
-		String port=host.port;
+		// 服务信息
 		List<ServiceInfo> services=new ArrayList<>();
 		// 服务信息
 		this.coreos.getServices().forEach(service->{
@@ -113,10 +117,7 @@ public class NetworkImpl implements Network{
 	}
 	@Override
 	public List<BundleInfo> getBundles(){
-		// 主机信息
-		HostInfo host=this.getHostInfo();
-		String ip=host.ip;
-		String port=host.port;
+		// 组件信息
 		List<BundleInfo> bundles=new ArrayList<>();
 		// 组件信息
 		this.coreos.getBundles().forEach(bundle->{
@@ -157,6 +158,10 @@ public class NetworkImpl implements Network{
 			for(Network net:targets){
 				if(net.equals(this)){
 					try{
+						DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+						String time=format.format(new Date());
+						HostInfo host=this.getHostInfo();
+						out.println(String.format("[%s]->[%s:%s]->[%s:%s]", time,host.ip,host.port,namespace,method));
 						return this.coreos.call(namespace, method, args);
 					}catch(Exception e){
 						e.printStackTrace();
@@ -183,22 +188,20 @@ public class NetworkImpl implements Network{
 	
 	@Override  
 	public boolean equals(Object other) {
-		HostInfo self=this.getHostInfo();
 		Network o=null;
 		if(other instanceof Network){
 			o=(Network)(other);
 		}
-		HostInfo host=o.getHostInfo();
-        return (self.ip+self.port).equals(host.ip+host.port);  
+        return this.getHostInfo().equals(o.getHostInfo());  
 	}
 	@Override  
     public int hashCode() {  
-		HostInfo self=this.getHostInfo();
-        return (self.ip+self.port).hashCode();  
+        return ("network"+ip+port).hashCode();  
     }
 	@Override
 	public String toString(){
-		HostInfo self=this.getHostInfo();
-		return self.ip+":"+self.port;
+		return "network:"+ip+":"+port;
 	}
+
+
 }

@@ -101,7 +101,7 @@
           <ul class="sidebar-menu" id="sidebar-menu">
             <li class="header">系统管理</li>
             <!-- Optionally, you can add icons to the links -->
-             <li class="treeview active">
+             <li class="treeview active" data-moudel="os.moudel.person">
               <a href="#"><i class="fa fa-male"></i> <span>个人体征</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
                 <li><a href="#" data-target="pages/person/bld_press.html"><i class="fa fa-area-chart"></i>血压</a></li>
@@ -110,7 +110,7 @@
                 <li><a href="#" data-target="pages/person/bld_fat.html"><i class="fa fa-tachometer"></i>体脂</a></li>
               </ul>
             </li>
-             <li class="treeview active">
+             <li class="treeview active" data-moudel="os.moudel.guard">
               <a href="#"><i class="fa fa-users"></i> <span>监护人</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
                 <li><a href="#" data-target="pages/guard/mn_info.html"><i class="fa fa-area-chart"></i>我的信息</a></li>
@@ -122,8 +122,8 @@
              <li class="treeview active">
               <a href="#"><i class="fa fa-gear"></i> <span>系统管理</span> <i class="fa fa-angle-left pull-right"></i></a>
               <ul class="treeview-menu">
-              	<li><a href="#" data-target="pages/log/log.html"><i class="fa fa-building-o"></i>日志管理</a></li>
-              	<li data-auth="true"><a href="#" data-target="pages/system/user.html" data-cache="no"><i class="fa fa-user"></i>用户管理</a></li>
+              	<li><a href="#" data-target="pages/log/log.html"  data-moudel="os.moudel.log"><i class="fa fa-building-o"></i>日志管理</a></li>
+              	<li data-auth="true"><a href="#" data-target="pages/system/user.html" data-cache="no"  data-moudel="os.moudel.user"><i class="fa fa-user"></i>用户管理</a></li>
               	<li id="sysctrl"><a href="#" target="_blank" data-auth="true"><i class="fa fa-user"></i>系统管理</a></li>
               </ul>
             </li>

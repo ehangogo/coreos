@@ -1,6 +1,8 @@
  //@ sourceURL=coreos.js
 +function(baseurl){
 	
+	
+	
 	// 初始化
 	+function init(){
 		// 查询组件仓库
@@ -46,8 +48,13 @@
 		
 		var action='install';
 		var param={addr:to,location:bundle,start:true};
-		
 		console.info('%s->%s->%s',action,to,bundle);
+		execute(action,param);
+	}
+	function repertory_install(bundle,num){
+		var action='install';
+		var param={location:bundle,start:true,num:num};
+		console.info('%s->%s->%s',action,bundle,num);
 		execute(action,param);
 	}
 	// 拖拽：迁移
@@ -70,22 +77,18 @@
 		execute(action,param);
 	}
 	// 全局：组件启动,停止,卸载,更新
-	function repertory_cmd(action,bundle){
+	function repertory_cmd(action,bundle,num){
 		var action=action;
 		var param={bundle:bundle};
+		if(action=='update'){
+			param.timer=num;
+		}else if(num){
+			param.num=num;
+		}
 		console.info('%s->%s',action,bundle);
 		execute(action,param);
 	}
-	// 内核
-	function coreos_cmd(action,node){
-		console.info(action);
-		console.info(node);
-		if(action=='cmd'){
-			command(node);
-		}else{
-			alert('暂不支持改功能');
-		}
-	}
+
 	
 	//###########
 	// 事件绑定
@@ -170,18 +173,26 @@
 				}
 		});
 		
-		// 双击打开命令行接口
-		$('.node').off('dblclick').on('dblclick', function(){ 
-			var node=$(this).find('.coreos').data('node');
-			coreos_cmd('cmd',node);
-		});
-		
 		$('.bundles-container li').smartMenu(bundle_menu,{name:'bundle'});
-		$('.coreos').smartMenu(coreos_menu,{name:'coreos'});
 	}
 
+	// 一键安装
+	$('#one_install').on('click',function(){
+		var len=$('#bundle-chooser').find(' .node').length;
+		var num=len%3+1;
+		var param={};
+		param['os.health']=num;
+		param['os.moudel.user']=num;
+		param['os.moudel.person']=num;
+		param['os.moudel.guard']=num;
+		param['os.moudel.log']=num;
+		param['os.moudel.db']=num;
+		
+		$('#editForm').form(param);
+		$('#lay_pop').pop({title:'一键部署',height:'300px',width:'490px'});
+	});
 	//###########
-	// 邮件菜单
+	// 右键菜单
 	//###########
 	// 仓库菜单
 	var repertory_menu=[
@@ -189,8 +200,35 @@
 		        text:'安装',
 		        func:function()
 		        {
+		        	var location=$(this).data('location');
+		        	layer.prompt({
+						formType:2,
+						title:'实例数目',
+						value:'1',
+						area: ['200px', '30px']
+					}, 
+					function(value,index){
+						layer.close(index);
+						repertory_install(location,value);
+					});
+		        	
+		        }
+		    },{
+		        text:'扩容',
+		        func:function()
+		        {
 		        	var bundle=$(this).data('bundle');
-		            repertory_cmd('install',bundle);
+		        	layer.prompt({
+						formType:2,
+						title:'实例数目',
+						value:'1',
+						area: ['200px', '30px']
+					}, 
+					function(value,index){
+						layer.close(index);
+						repertory_cmd('change',bundle,value);
+					});
+		        	
 		        }
 		    },{
 		        text:'启动',
@@ -200,11 +238,28 @@
 		            repertory_cmd('start',bundle);
 		        }
 		    },{
-		        text:'更新',
+		        text:'升级',
 		        func:function()
 		        {
 		        	var bundle=$(this).data('bundle');
-		            repertory_cmd('update',bundle);
+		            var bundle=$(this).data('bundle');
+		        	layer.prompt({
+						formType:2,
+						title:'时间间隔',
+						value:'10',
+						area: ['200px', '30px']
+					}, 
+					function(value,index){
+						layer.close(index);
+						repertory_cmd('update',bundle,value);
+					});
+		        }
+		    },{
+		        text:'重启',
+		        func:function()
+		        {
+		        	var bundle=$(this).data('bundle');
+		            repertory_cmd('restart',bundle);
 		        }
 		    },{
 		        text:'停止',
@@ -233,6 +288,14 @@
 			            bundle_cmd('start',nodes,bundle);
 			        }
 			    },{
+			        text:'重启',
+			        func:function()
+			        {
+			        	var bundle=$(this).data('bundle');
+			            var nodes=$(this).parents('ul').data('node');
+			        	bundle_cmd('restart',nodes,bundle);
+			        }
+			    },{
 			        text:'停止',
 			        func:function()
 			        {
@@ -241,7 +304,7 @@
 			        	bundle_cmd('stop',nodes,bundle);
 			        }
 			    },{
-			        text:'更新',
+			        text:'升级',
 			        func:function()
 			        {
 			        	var bundle=$(this).data('bundle');
@@ -258,83 +321,24 @@
 			        }
 			    }]
     ];
-	// 内核菜单
-	var coreos_menu=[
-			    [{
-			        text:'命令行',
-			        func:function()
-			        {
-			        	var node=$(this).data('node');
-			            coreos_cmd('cmd',node);
-			        }
-			    },{
-			        text:'启动',
-			        func:function()
-			        {
-			            var node=$(this).data('node');
-			            coreos_cmd('start',node);
-			        }
-			    },{
-			        text:'终止',
-			        func:function()
-			        {
-			        	var node=$(this).data('node');
-			            coreos_cmd('stop',node);
-			        }
-			    },{
-			        text:'重启',
-			        func:function()
-			        {
-			        	var node=$(this).data('node');
-			            coreos_cmd('restart',node);
-			        }
-			    }]
-    ];
 	
-	function command(node){
-		
-		// 主机端口号减去1000为telnet端口
-		var ip=node.split(':')[0];
-		var port=node.split(':')[1];
-		if(port<=1000){
-			port=port-0+1000;
-		}else{
-			port=port-1000;
+	
+	// 添加和更新表单提交
+	$('#btn_submit').on('click',function(){
+		// 检查
+		if(!$('#editForm').check()){
+			return;	
 		}
-		node=ip+':'+port;
-		
-		layer.open({
-				  type: 2,
-				  shade: 0,
-				  zIndex: layer.zIndex,
-				  title: '命令行 '+node,
-				  maxmin: true,
-				  shadeClose: true,
-				  area : ['735px' , '500px'],
-				  content: 'pages/system/telnet.html',
-				  success: function(layero, index){
-					    var body = layer.getChildFrame('body', index);
-					    var iframeWin = window[layero.find('iframe')[0]['name']];
-					    if(node){
-					    	iframeWin.telnet(node);
-					    	iframeWin.refresh=infos;
-					    	iframeWin.setTitle=function(title){
-								parent.layer.title(title,index);
-							}
-					    	iframeWin.exit=function(){
-					    		layer.close(index);
-					    	}
-					    }
-				  },
-				  cancel:function(index, layero){ 
-					   var body = layer.getChildFrame('body', index);
-					   var iframeWin = window[layero.find('iframe')[0]['name']];
-					   iframeWin.cancel();
-				  }    
-		 });
-		
-	}
-	
+		// 提交
+		var param=$('#editForm').form();
+		// 系统信息
+		$.adminRPC('admin/oneInstall',param).done(function(nodes){
+			$('#nodes-container .node[data-type="normal"]').remove();
+			$('#coreos_info').tmpl(bundles_translate(nodes)).prependTo($('#nodes-container'));
+			coreos_bind();
+			$('#lay_pop').close();
+		});
+	});
 	//###########
 	// 私有函数
 	//###########
@@ -467,160 +471,5 @@
     
 
 
-	// 主机探测
-	var nodes=[];
-	var count=0;
-	var timer=null;
-	
-	// 存储
-	var store_ky=new StoreDB('ping_key');
-	var store_ls=new StoreDB('ping_list');
-	
-	
-	function ping_list(){
-		
-		// 探测主机列表
-		var ping_nodes=store_ls.list();
-		$('#ping-chooser').html('');
-		$('#ping_nodes').tmpl({ping_nodes:ping_nodes}).appendTo($('#ping-chooser'));
-		
-		// 探测网段
-		$('#new-node').val(store_ky.get().replace(',','\n'));
-				
-	}
-	
-	// 初始化
-	ping_list(); 
-	
-	$('#add-new-node').on('click',function(){
-		
-		infos();
-		
-		nodes=[];
-		count=0;
-		timer=null;
-		
-		var pings=$('#new-node').val();
-		if(!pings){return;}
-		
-		// 根据IP段获取对应的地址
-		var addrs=[];
-		var arr=pings.split('\n');
-		for(var i in arr){
-			addrs=addrs.concat(getAddr(arr[i]));
-		}
-		
-		// 探测
-		for(var i in addrs){
-			count++;
-			ping(addrs[i],nodes);
-		}
-		
-		store_ky.set(pings.replace(/\n{2,}/ig,'\n').replace('\n',','));
-		
-		// 保存结果
-		timer=setInterval(function(){
-			if(count<=0){
-				clearInterval(timer);
-				if(nodes.length>0){
-					store_ls.clear();
-					for(var i in nodes){
-						store_ls.add(nodes[i]);
-					}
-					ping_list();
-				}else{
-					alert('指定IP段暂未可用主机');
-				}
-				infos();
-			}
-		},50);
-		
-	});
-	$('#ping-chooser').on('dblclick','a[data-role="ping_select"]',function(){
-		var node=$(this).parents('li').data('node');
-		command(node);
-	});
-	$('#ping-chooser').on('click','a[data-role="ping_rm"]',function(){ 
-		var node=$(this).parents('li').data('node');
-		store_ls.remove(node);
-		ping_list();
-	});
-	
-	function getAddr(addr){
-		var ip=addr.split(':')[0];
-		var port=addr.split(':')[1];
-		
-		var addrs=$('#new-node').val();
-		if(!addrs){return;}
-		
-		var ip=addr.split(':')[0];
-		var port=addr.split(':')[1];
-		
-		// 符合规则的IP
-		var ips=[];
-		if(ip.indexOf('.'>-1)){
-			var last=ip.split('.')[3];
-			if(last==='*'){
-				for(var i=0;i<255;i++){
-					ips.push(ip.replace(last,i));
-				}
-			}else if(last.indexOf('~')>-1){
-				var start=last.split('~')[0];
-				var end=last.split('~')[1];
-				for(var i=start;i<=end;i++){
-					ips.push(ip.replace(last,i));
-				}
-			}else{
-				ips.push(ip);
-			}
-		}else{
-			ips.push(ip);
-		}
-		
-		// 符合规则的PORT
-		var ports=[];
-		if(port.indexOf('~')>-1){
-			var start=port.split('~')[0];
-			var end=port.split('~')[1];
-			if(start>end){
-				alert('端口返回错误');
-				return;
-			}
-			for(var i=start;i<=end;i++){
-				ports.push(i);
-			}
-		}else{
-			ports.push(port);
-		}
-		
-		// 符合规则的IP:PROT串
-		var addrs=[];
-		for(var i in ips){
-			for(var j in ports){
-				addrs.push(ips[i]+':'+ports[j]);
-			}
-		}
-		return addrs;
-	}
-	// 端口探测
-	function ping(addr,nodes){
-		var ip=addr.split(':')[0];
-		var port=addr.split(':')[1];
-		if(port<=1000){
-			port=port-0+1000;
-		}else{
-			port=port-1000;
-		}
-		var socket=new WebSocket('ws://'+ip+':'+port+'/');
-		socket.onopen=function(event){
-			console.info('%s coreos running',addr);
-			nodes.push(addr);
-			count--;
-		}
-		socket.onerror=function(event){
-			console.info('%s no coreos',addr);
-			count--;
-		}
-	}
 	
 }(baseurl);

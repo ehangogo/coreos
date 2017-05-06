@@ -12,28 +12,11 @@
 					          <div class="box box-solid">
 					            <div class="box-header with-border">
 					              <h3 class="box-title">组件仓库</h3>
+					              <button id="one_install" type="button" class="btn btn-primary btn-flat pull-right btn-ping" style="margin-top:-11px">一键部署</button>
 					            </div>
 					            <div class="box-body">
 					              <div class="btn-group" style="width: 100%; ">
-					              	<div class="input-group" style="margin-bottom: 10px;">
-						                <input id="new-bundle" type="text" class="form-control" placeholder="组件">
-						                <div class="input-group-btn">
-						                  <button id="add-new-bundle" type="button" class="btn btn-primary btn-flat">上传</button>
-						                </div>
-						            </div>
 					                <ul class="fc-color-picker" id="bundle-chooser" data-role="repertory"></ul>
-					              </div>
-					            </div>
-					          </div>
-					          <div class="box box-solid">
-					            <div class="box-header with-border">
-					              <h3 class="box-title">主机探测</h3>
-					              <button id="add-new-node" type="button" class="btn btn-primary btn-flat pull-right btn-ping" style="margin-top:-11px">探测</button>
-					            </div>
-					            <div class="box-body">
-					              <div class="btn-group" style="width: 100%; ">
-					               	 <textarea id="new-node" class="form-control"  placeholder="192.168.0.1:8080~8090" style="min-height:80px;"></textarea>
-					                 <ul class="fc-color-picker" id="ping-chooser" data-role="nodes"></ul>
 					              </div>
 					            </div>
 					          </div>
@@ -46,10 +29,73 @@
         </div>    
 	</div>
 </section>
+<!--弹出层-->
+<div class="lay_pop" id="lay_pop" style="display:none">
+	<form id="editForm" class="form-horizontal">
+		  <input type="hidden" class="form-control" name="id" >
+          <div class="box-body">
+          	 <div class="row">
+          	  		<div class="form-group col-md-6">
+	                  <label for="school" class="control-label col-md-6">
+	                  	<a class="text-green" href="javascript:void(0)"><i class="iconfont icon-health"></i>&nbsp;光彩监护</a>
+	                  </label>
+	                  <div class="col-md-6">
+	                  	<input type="text" class="form-control" name="os.health" placeholder="数目">
+	                  </div>
+	                </div>
+	                 <div class="form-group col-md-6">
+	                  <label for="city" class="control-label col-md-6">
+	                  	<a class="text-orange" href="javascript:void(0)"><i class="iconfont icon-user"></i>&nbsp;用户管理</a>	                  
+	                  </label>
+	                   <div class="col-md-6">
+	                  	 <input type="text" class="form-control" name="os.moudel.user" placeholder="数目">
+	                   </div>
+	                </div>
+                </div>
+                <div class="row">
+                 <div class="form-group col-md-6">
+	                  <label for="age" class="control-label col-md-6">
+	                  	<a class="text-orange" href="javascript:void(0)"><i class="iconfont icon-person"></i>&nbsp;个人体征</a>
+	                  </label>
+	                  <div class="col-md-6">
+	                   <input type="text" class="form-control" name="os.moudel.person" placeholder="数目">
+	                  </div>
+	                </div>
+	                  <div class="form-group col-md-6">
+	                  <label for="phone" class="control-label col-md-6">
+	                  	<a class="text-orange" href="javascript:void(0)"><i class="iconfont icon-guard"></i>&nbsp;监控组件</a>
+	                  </label>
+	                  <div class="col-md-6">
+	                  	<input type="text" class="form-control" name="os.moudel.guard" placeholder="数目">
+	                  </div>
+	                </div>
+                </div>
+                <div class="row">
+          			<div class="form-group col-md-6">
+	                  <label for="sex" class="control-label col-md-6">
+	                  	<a class="text-orange" href="javascript:void(0)"><i class="iconfont icon-log"></i>&nbsp;日志组件</a>
+	                  </label>
+	                  <div class="col-md-6">
+	                   	<input type="text" class="form-control" name="os.moudel.log" placeholder="数目">
+	                  </div>
+	                </div>
+	                <div class="form-group col-md-6">
+	                  <label for="name" class="control-label col-md-6">
+	                  	<a class="text-orange" href="javascript:void(0)"><i class="iconfont icon-db"></i>&nbsp;数据组件</a>
+	                  </label>
+	                  <div class="col-md-6">
+	                  	<input type="text" class="form-control" name="os.moudel.db" placeholder="数目">
+	                  </div>
+	                </div>
+                </div>
+          </div>
+          <div class="box-footer">
+            <button type="button" id="btn_submit" class="btn btn-info" style="width:100%">一键部署</button>
+          </div>
+    </form>
+</div>
+<!--开始-->
 <script src="js/system/coreos.js"></script> 
-<style>
-
-</style>
 <script type="text/html" id="coreos_info">
 	<%for(var i=0;i<nodes.length;i++){%>
 		<div class="node" data-type="${nodes[i].type}">
@@ -74,8 +120,4 @@
 		<%}%>
 	<%}%>
 </script>
-<script type="text/html" id="ping_nodes">
-	<%for(var i=0;i<ping_nodes.length;i++){%>
-		<li data-node="${ping_nodes[i]}"><a class="text-blue" href="javascript:void(0)" data-role="ping_select"><i class="text-green iconfont icon-node"></i>${ping_nodes[i]}</a><a class="text-blue" href="javascript:void(0)" data-role="ping_rm"><i class="fa fa-trash opt"></i></a></li>
-	<%}%>
-</script>
+

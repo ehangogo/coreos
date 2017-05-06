@@ -25,6 +25,7 @@ property = {
 		Debug.COMMAND_FUNCTION + "=bundles",
 		Debug.COMMAND_FUNCTION + "=nodes",
 		Debug.COMMAND_FUNCTION + "=install",
+		Debug.COMMAND_FUNCTION + "=restart",
 		Debug.COMMAND_FUNCTION + "=start",
 		Debug.COMMAND_FUNCTION + "=stop",
 		Debug.COMMAND_FUNCTION + "=uninstall",
@@ -33,7 +34,8 @@ property = {
 		Debug.COMMAND_FUNCTION + "=update",
 		Debug.COMMAND_FUNCTION + "=change",
 		Debug.COMMAND_FUNCTION + "=move",
-		Debug.COMMAND_FUNCTION + "=check"
+		Debug.COMMAND_FUNCTION + "=check",
+		Debug.COMMAND_FUNCTION + "=config"
 },service=CmdApp.class,immediate=true)
 public class CmdApp {
 		
@@ -149,6 +151,20 @@ public class CmdApp {
 			coreos.call(NAMESPACE,"start",bundle);
 		}
 	}
+	public void restart(String addr,String bundle){
+		this.stop(addr,bundle);
+		this.start(addr,bundle);
+	}
+	public void restart(String bundle){
+		this.stop(bundle);
+		this.start(bundle);
+	}
+	public void config(){
+		this.coreos.call(NAMESPACE,"config");
+	}
+	public void config(String key){
+		this.coreos.call(NAMESPACE, "config",key);
+	}
 	public void stop(String addr,String bundle){
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
@@ -201,6 +217,11 @@ public class CmdApp {
 		ClusterMgr cluser=this.getManager();
 		if(cluser!=null){
 			cluser.change(bundle,num);
+		}else{
+			// 通过nameVersion获取jar包安装路径
+			String location=BundleUtil.fullName(bundle)+".jar";
+			coreos.call(NAMESPACE, "install",location);
+			coreos.call(NAMESPACE,"start",bundle);
 		}
 	}
 	public void move(String bundle,String from,String to){

@@ -41,4 +41,6 @@ JPM-Command:					debug
 	osgi.enroute.logger.simple.provider;version='[2.0.0,2.0.1)'
 
 -runstorage:            generated/node8086
--runproperties:         org.osgi.service.http.port=8086
+-runproperties: org.osgi.service.http.port=8086
+-runvm: -Dos.host.ip=127.0.0.1\n\
+	-Dos.host.name=node8086\n\

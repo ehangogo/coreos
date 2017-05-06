@@ -146,6 +146,23 @@ public class AdminApp extends BaseCtrl implements JSONRPC  {
 		}
 		return infos();
 	}
+	public List oneInstall(Map<String,Object> param){
+		for (Map.Entry<String,Object> it : param.entrySet()) {
+			String key=it.getKey();
+			Object val=it.getValue();
+			if(key!=null&&key.startsWith("os.")){
+				String bundle=key.toString();
+				Long num=Long.parseLong(val.toString());
+				cmd.change(bundle,num);
+			}
+		}
+		try {
+			Thread.sleep(50);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return infos();
+	}
 	public ClusterMgr getManager(){
 		Object target=this.coreos.getService("os.network.api.Network");
 		if(target!=null){

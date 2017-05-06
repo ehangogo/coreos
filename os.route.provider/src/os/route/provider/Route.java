@@ -8,6 +8,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Deactivate;
 
+import os.core.conf.Config;
+
 /**
  * 路由模块
  */
@@ -19,18 +21,30 @@ public class Route extends ZooKeeperServerMain {
 
 	// 初始匿
 	@Activate
-	void activate(BundleContext context) {
+	void start(BundleContext context) {
+		
+		System.out.println(Config.get(Config.ROUTE_URL));
+		// 默认启动端口
+		String port=Config.get(Config.ROUTE_URL);
+		String ip=Config.get(Config.HOST_IP);
+		if(port.split(":").length==2){
+			port=port.split(":")[1];
+		}
+		
+		// 获取系统临时目录,用于存放网络信息
+		String tmp=System.getProperty("java.io.tmpdir");
 		
 		// 创建路由相关配置
-		System.out.println("配置路由...");
+		System.out.println(String.format("config:route:%s:%s", ip,port));
+		System.out.println(String.format("config:tmp:%s",tmp));
 		config = new ServerConfig();
-		config.parse(new String[]{"6789","D:/route"});
+		config.parse(new String[]{port,tmp});
 		
 		// 启动路由
-		System.out.println("启动路由...");
-		thread = new Thread(this::config, "os.route");
+		System.out.println("start:route");
+		thread = new Thread(this::config_run,"os.route");
 		thread.start();
-		
+	
 	}
 	
 	// 注销
@@ -38,18 +52,17 @@ public class Route extends ZooKeeperServerMain {
 	void deactivate() {
 		shutdown();
 		thread.interrupt();
-		System.out.println("路由关停...");
+		System.out.println("stop:route");
 	}
 	
-	// 配置路由
-	public void config() {
+	// 根据配置启动
+	public void config_run() {
 		try {
 			runFromConfig(config);
 		} catch (Exception e) {
 			e.printStackTrace();
-			System.out.println("配置失败...");
+			System.out.println("config:error");
 		}
-		System.out.println("路由关停...");
 	}
 	
 }

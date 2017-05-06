@@ -20,6 +20,7 @@ import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
 import org.osgi.framework.ServiceReference;
+import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -29,7 +30,9 @@ import org.osgi.service.startlevel.StartLevel;
 import org.osgi.util.tracker.ServiceTracker;
 
 import os.core.api.CoreOS;
+import os.core.conf.Config;
 import os.core.model.BundleInfo;
+import os.core.model.ConfigInfo;
 import os.core.model.ServiceInfo;
 import os.core.tools.BundleUtil;
 import os.core.tools.ReflectUtil;
@@ -435,7 +438,36 @@ public class CoreImpl implements CoreOS{
 	public BundleContext getContext(){
 		return context;
 	}
-	
+	ConfigurationAdmin cm=null;
+	@Reference void config(ConfigurationAdmin cm) {
+		this.cm=cm;
+		//Config.update(cm);
+	}
+	// 读取系统配置
+	@Override
+	public String getConf(String key,String def){
+		return Config.get(key,def);
+	}
+	// 设置系统配置
+	@Override
+	public String setConf(String key,String val){
+		String old=Config.get(key);
+		Config.set(key,val);
+		return old;
+	}
+	// 显示系统设置
+	public List<ConfigInfo> listConf(){
+		List<ConfigInfo> list=new ArrayList<>();
+		Config.config.forEach((key,val)->{
+			if(key.toString().startsWith("os.")){
+				list.add(new ConfigInfo(key.toString(),val.toString()));
+			}
+		});
+		list.sort((o1,o2)->{
+			return o1.key.compareTo(o2.key);
+		});
+		return list;
+	}
 	
 	// 其他接口
 	StartLevel startLevel=null;

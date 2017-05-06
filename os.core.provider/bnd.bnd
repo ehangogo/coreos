@@ -36,7 +36,8 @@ Private-Package: \
 Export-Package: \
 	os.core.api,\
 	os.core.model,\
-	os.core.tools
+	os.core.tools,\
+	os.core.conf
 	
 Bundle-Icon: icon.png;size=64
 Bundle-Name: 软件内核

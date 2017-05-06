@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import org.osgi.framework.Bundle;
 
@@ -74,9 +75,17 @@ public class BundleMgr {
 		int unsize=unstallNodes.size();
 		// 扩容
 		if(num>size){
-			long len=(num-size)>unsize?unsize:(num-size);
+			Long len=(num-size)>unsize?unsize:(num-size);
+			int old=-1;
 			for(int i=0;i<len;i++){
-				install(unstallNodes.get(i),location);
+				int index=random(unsize);
+				if(index==old){
+					index=random(unsize);
+					i--;
+					continue;
+				}
+				install(unstallNodes.get(index),location);
+				old=index;
 			}
 		// 缩容
 		}else if(num<size){
@@ -85,6 +94,9 @@ public class BundleMgr {
 				uninstall(installNodes.get(i),bdlName);
 			}
 		}
+	}
+	private int random(int range){
+		return new Random().nextInt(range);
 	}
 	// 指定主机安装
 	public void install(String addr,String location){
