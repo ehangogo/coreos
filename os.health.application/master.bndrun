@@ -11,13 +11,13 @@ JPM-Command:					health
 -runfw:						org.eclipse.osgi
 
 -runrequires: \
+	osgi.identity;filter:='(osgi.identity=com.mysql.jdbc)',\
 	osgi.identity;filter:='(osgi.identity=os.route.provider)',\
 	osgi.identity;filter:='(osgi.identity=os.network.provider)',\
 	osgi.identity;filter:='(osgi.identity=os.admin.application)',\
-	osgi.identity;filter:='(osgi.identity=os.health.application)',\
-	osgi.identity;filter:='(osgi.identity=os.moudel.db.provider)',\
 	osgi.identity;filter:='(osgi.identity=org.apache.felix.gogo.shell)',\
 	osgi.identity;filter:='(osgi.identity=org.amdatu.remote.discovery.zookeeper)'
+	
 -runbundles: \
 	com.mysql.jdbc;version='[5.1.35,5.1.36)',\
 	org.apache.felix.configadmin;version='[1.8.8,1.8.9)',\
