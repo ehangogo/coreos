@@ -59,7 +59,11 @@ public class DBPool implements DataSource {
         if(list.size()<=0){
             throw new RuntimeException("Êý¾Ý¿âÃ¦£¬Çë´ý»áÔÙÊÔÊÔ°É£¡");
         }
-        Connection conn = list.removeFirst();
+        Connection conn=null;
+        synchronized (list) {
+        	 conn = list.removeFirst();
+		}
+       
         LocalConn connect = new LocalConn(conn);
         return connect;
     }

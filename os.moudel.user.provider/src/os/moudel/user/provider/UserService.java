@@ -53,13 +53,13 @@ public class UserService {
 				// 添加时间戳
 				DateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:dd");
 				map.put("time",format.format(new Date()));
-				userid=this.coreos.call(DB_CLASS,"excute","user",map);
+				userid=Long.parseLong(this.coreos.call(DB_CLASS,"excute","user",map).toString());
 			}
 			
 			// 创建个人信息记录
 			Map param=new HashMap();
 			param.put("name",map.get("realname").toString());
-			Long fkid=this.coreos.call(DB_CLASS,"excute","mn_info",param);
+			Long fkid=Long.parseLong(this.coreos.call(DB_CLASS,"excute","mn_info",param).toString());
 			
 			// 创建个人信息记录和登录用户关联关系
 			param=new HashMap();

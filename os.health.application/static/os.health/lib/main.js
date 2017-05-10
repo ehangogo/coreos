@@ -804,14 +804,14 @@ function _init() {
 	    	//$.cookie('password',user.password);
 			auth(user);
 			$('#user_info').html('用户：'+user.username);
-			check();
+			check(user);
 			// 启动定时任务定时查询系统可用模块
 			// setInterval(check,20000);
 	    }else{
 			window.location.href='login.html';
 		}
 	});
-	function check(){
+	function check(user){
 		$('[data-moudel]').hide();
 		$.JsonRPC('person/query',{table:'bld_fat'}).done(function(result){
 			if(result){
@@ -828,11 +828,13 @@ function _init() {
 				$('[data-moudel="os.moudel.log"]').show();
 			}
 		});
-		$.JsonRPC('user/query').done(function(result){
-			if(result){
-				$('[data-moudel="os.moudel.user"]').show();
-			}
-		});
+		if(user.role=='admin'){
+			$.JsonRPC('user/query').done(function(result){
+				if(result){
+					$('[data-moudel="os.moudel.user"]').show();
+				}
+			});
+		}
 	}
 	$('#logout').on('click',function(){
 		$.JsonRPC("login/loginout").done(function(user){
