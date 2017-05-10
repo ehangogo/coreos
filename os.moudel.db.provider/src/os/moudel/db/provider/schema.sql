@@ -1,6 +1,6 @@
 
 USE `mysql`;
-UPDATE USER SET `host`='%' WHERE USER='root';
+UPDATE USER SET `host`='%' WHERE USER='root' and `host`='localhost';
 FLUSH PRIVILEGES;
 
 CREATE DATABASE IF NOT EXISTS `coreos`;
