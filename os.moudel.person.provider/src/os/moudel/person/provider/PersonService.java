@@ -9,6 +9,7 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
 import os.core.api.CoreOS;
+import os.core.tools.HostUtil;
 
 /**
  * 个人体征模块
@@ -37,6 +38,10 @@ public class PersonService {
 		}
 	}
 	public void debug(String table){
+		
+		String ip=HostUtil.address();
+		String port=HostUtil.port();
+		System.out.println(String.format("%s:%s->执行体脂查询->",ip,port));
 		Map where=new HashMap<>();
 		List<Map<String,Object>> res=this.coreos.call(DB_CLASS,"query",table,where,"time desc","10");
 		// 获取表头信息
