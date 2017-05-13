@@ -9,4 +9,4 @@ set "COREOS_HOME=%cd%"
 if not "%1" == "" set "PORT=%1"
 
 :: 通过java -jar 启动程序,并指定占用的端口号和配置文件的位置
-java -Dorg.osgi.service.http.port=%PORT% -Dos.home=%COREOS_HOME% -Dos.conf=%COREOS_HOME%\config.properties -jar slave.jar
+java -cp ".;slave.jar" -Dorg.osgi.service.http.port=%PORT% -Dos.home=%COREOS_HOME% -Dos.conf=%COREOS_HOME%\config.properties aQute.launcher.pre.EmbeddedLauncher

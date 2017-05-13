@@ -48,8 +48,8 @@ public class RouteConnect {
 	public RouteConnect report(String ip,String port,String url) throws Exception{
 		// 创建route下的子目录,一个子目录记录一个主机。产生一个UUID作为key,对应的主机通讯IP和端口,作为数据value
 		UUID uuid = UUID.randomUUID();
-		zk.create("/route/"+uuid.toString().substring(0,8), ("http://"+ip+":"+port+"/"+url+"/").getBytes(),Ids.OPEN_ACL_UNSAFE,CreateMode.EPHEMERAL);
 		
+		zk.create("/route/"+uuid.toString().substring(0,8), ("http://"+ip+":"+port+"/"+url+"/").getBytes(),Ids.OPEN_ACL_UNSAFE,CreateMode.EPHEMERAL);
 		// 更新通讯地址
 		updateUrls();
 		return this;
@@ -77,11 +77,16 @@ public class RouteConnect {
 		return this;
 	}
 	public void create_proxy(List<String> urls){
+		
+		// 清空原有数据
+		NetworkImpl net=(NetworkImpl)this.network;
+		net.clear();
+		
 		for(String url:urls){
 			// 参数:类加载器,Network接口,Hanlder函数
 			Object network =Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class[]{Network.class}, new ProxyHandler(url));
 			// 向network添加远程代理对象
-			((NetworkImpl)this.network).add((Network)network);
+			net.add((Network)network);
 		}
 	}
 	public class ProxyHandler implements InvocationHandler{

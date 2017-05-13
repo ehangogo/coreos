@@ -90,8 +90,10 @@ public class NetworkImpl implements Network{
 		
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
-		HostInfo host=network.getHostInfo();
-		out.println(String.format("[%s]->[%s:%s]->[off]", time,host.ip,host.port));
+		String host=network.toString();
+		int index=host.replaceAll("http://","").indexOf("/");
+		host=host.replaceAll("http://","").substring(0,index);
+		out.println(String.format("[%s]->[%s]->[off]", time,host));
 	}
 	
 	@Override

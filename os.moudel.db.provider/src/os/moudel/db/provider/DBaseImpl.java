@@ -11,7 +11,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +52,9 @@ public class DBaseImpl implements DBase {
 		if(db==null){
 			db=new DBPool();
 		}
+		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss.SSS");
+		String time=format.format(new Date());
+		System.out.println("start:"+time);
 	}
 	
 	public List<Map<String,Object>> query(String sql) {

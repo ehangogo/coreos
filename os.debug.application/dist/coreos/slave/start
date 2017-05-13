@@ -12,5 +12,5 @@ if [ $# == 1 ]; then PORT=$1; fi
 	
 
 # 通过java -jar 启动程序,并指定占用的端口号和配置文件的位置
-java -Dorg.osgi.service.http.port=$PORT -Dos.home=$COREOS_HOME -Dos.conf=$COREOS_HOME/config.properties -jar slave.jar
+java -cp ".;slave.jar" -Dorg.osgi.service.http.port=$PORT -Dos.home=$COREOS_HOME -Dos.conf=$COREOS_HOME/config.properties aQute.launcher.pre.EmbeddedLauncher
 

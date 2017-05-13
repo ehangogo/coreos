@@ -264,9 +264,9 @@ public class CoreShell {
 		DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
 		String time=format.format(new Date());
 		if(port!=null){
-			out.println(String.format("[%s]->[%s:%s-%s]->[%s(%s)]->[%s]",time,address,port,"call",namespace,params,res));
+			out.println(String.format("[%s]->[%s:%s-%s]->[%s.%s(%s)]->[%s]",time,address,port,"call",namespace,method,params,res));
 		}else{
-			out.println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,params,res));
+			out.println(String.format("[%s]->[%s-%s]->[%s(%s)]->[%s]",time,address,"call",namespace,method,params,res));
 		}
 	}
 	

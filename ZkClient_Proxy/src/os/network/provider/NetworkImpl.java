@@ -66,6 +66,9 @@ public class NetworkImpl implements Network{
 		}
 		routes.add(network);
 	}
+	public void clear(){
+		routes.clear();
+	}
 	public void remove(Network network){
 		routes.remove(network);
 	}
