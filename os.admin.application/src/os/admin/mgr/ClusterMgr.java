@@ -3,6 +3,7 @@ package os.admin.mgr;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.osgi.framework.Bundle;
 
@@ -15,6 +16,7 @@ import os.core.model.ServiceInfo;
  * @author 尹行欣
  *
  */
+@SuppressWarnings({ "rawtypes" ,"unchecked"})
 public class ClusterMgr {
 
 	private NetworkWrapper network;
@@ -291,7 +293,6 @@ public class ClusterMgr {
 	public void uninstall(String nameVersion){
 		this.manager.uninstall(nameVersion);
 	}
-	
 	public void update(String addr,String nameVersion){
 		this.manager.update(addr,nameVersion);
 	}
@@ -326,6 +327,11 @@ public class ClusterMgr {
 	
 	public Object exec(String namespace,String name,Object... args){
 		NetworkWrapper target=this.network;
+		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
+			List res=target.call(namespace,name,args);
+			debug(target,(List<Map<String,Object>>)res);
+			return null;
+		}
 		Object res=target.call(namespace,name,args);
 		return res;
 	}
@@ -333,7 +339,41 @@ public class ClusterMgr {
 		NetworkWrapper target=this.getTarget(addr);
 		if(target==null) return null;
 		Object res=target.call(namespace,name,args);
+		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
+			debug(target,(List<Map<String,Object>>)res);
+			return null;
+		}
 		return res;
+	}
+	
+	public void debug(NetworkWrapper target,List<Map<String,Object>> res){
+		HostInfo host=target.getHostInfo();
+		String ip=host.ip;
+		String port=host.port;
+		System.out.println(String.format("%s:%s->执行体脂查询->",ip,port));
+		// 获取表头信息
+		StringBuilder header=new StringBuilder();
+		if(res!=null&&res.size()>0){
+			Map row=res.get(0);
+			row.forEach((key,val)->{
+				header.append(key+"|");
+			});
+		}
+		// 添加表头信息
+		List<String> lines=new ArrayList<>();
+		lines.add("用户名|脂肪含量|BMI|基础代谢|体脂判断|体型判断|测量时间|报警|医生建议");
+		
+		String fields[]={"username","zfhl","bmi","jcdx","tzpd","txpd","time","alert","ysjy"};
+		// 数据列
+		res.forEach(row->{
+			StringBuilder line=new StringBuilder();
+			for(String f:fields){
+				line.append(row.get(f).toString()+"|");
+			}
+			// 添加数据列
+			lines.add(line.toString().replaceAll("[|]$",""));
+		});
+		print(lines);
 	}
 	NetworkWrapper getTarget(String addr){
 		String ip=addr;

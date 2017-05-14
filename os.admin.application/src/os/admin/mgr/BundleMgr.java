@@ -179,29 +179,113 @@ public class BundleMgr {
 	public void stop(String addr,String nameVersion){
 		this.execute("stop",addr,nameVersion);
 	}
-	
+
 	// 全量更新
 	public void update(String nameVersion){
-		this.update(nameVersion,10L);
-	}
-	public void update(String nameVersion,Long time){
-		List<NetworkWrapper> routes=network.getRoutes();
-		for(NetworkWrapper net:routes){
-			try{
-				List<BundleInfo> bdls=net.getBundles();
-				int size=search(nameVersion,bdls).size();
-				if(size>0){
-					this.execute("update",net,nameVersion);
-				}
-				try {
-					Thread.sleep(time*1000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-			}catch(Exception e){
-				break;
+		if(nameVersion.equals("stop")){
+			status="stop";
+			if(update_bundle!=null){
+				System.out.println(String.format("%s->升级任务->终止成功",update_bundle));
 			}
+			while(thread.isAlive()){
+				thread.interrupt();
+				try {
+					Thread.sleep(200);
+				} catch (Exception e) {
+				}
+			}
+			thread=null;
+			
+		}else if(nameVersion.equals("start")){
+			status="start";
+			if(update_bundle!=null){
+				System.out.println(String.format("%s->升级任务->启动成功",update_bundle));
+			}
+		}else if(nameVersion.equals("pause")){
+			status="pause";
+			if(update_bundle!=null){
+				System.out.println(String.format("%s->升级任务->暂停成功",update_bundle));
+			}
+		}else if(nameVersion.equals("status")){
+			if(update_bundle!=null){
+				if(status.equals("start")){
+					System.out.println(String.format("%s->升级任务->进行中...",update_bundle));
+				}
+				if(status.equals("pause")){
+					System.out.println(String.format("%s->升级任务->已暂停",update_bundle));
+				}
+			}else{
+				System.out.println("暂无升级任务");
+			}
+		}else{
+			this.update(nameVersion,10L);
 		}
+	}
+	// 升级状态
+	public static String status=null;
+	// 升级线程
+	public static Thread thread=null;
+	// 正在升级的组件
+	public static String update_bundle=null;
+	public void update(String nameVersion,Long time){
+		// 存在升级任务
+		if(thread!=null&&thread.isAlive()){
+			if(status.equals("start")){
+				System.out.println(String.format("%s->升级任务->进行中...",update_bundle));
+			}
+			if(status.equals("pause")){
+				System.out.println(String.format("%s->升级任务->已暂停",update_bundle));
+			}
+			return;
+		}
+		// 启动升级
+		status="start";
+		update_bundle=nameVersion;
+		thread=new Thread(new Runnable(){
+			public void run() {
+				List<NetworkWrapper> routes=network.getRoutes();
+				for(int i=0;i<routes.size();i++){
+					NetworkWrapper net=routes.get(i);
+					// 暂停
+					while(status.equals("pause")){
+						try {
+							Thread.sleep(1000);
+						} catch (Exception e) {
+							break;
+						}
+					}
+					// 终止
+					if(status.equals("stop")){
+						break;
+					}
+					// 升级
+					try{
+						List<BundleInfo> bdls=net.getBundles();
+						int size=search(nameVersion,bdls).size();
+						if(size>0){
+							execute("update",net,nameVersion);
+						}
+					}catch(Exception e){
+						break;
+					}
+					// 升级完成
+					if(i==(routes.size()-1)){
+						break;
+					}
+					// 间隔
+					try{
+						Thread.sleep(time*1000);
+					} catch (Exception e) {
+						break;
+					}
+					
+				}
+				update_bundle=null;
+			}
+			
+		});
+		thread.start();
+		
 	}
 	// 指定主机更新
 	public void update(String addr,String nameVersion){

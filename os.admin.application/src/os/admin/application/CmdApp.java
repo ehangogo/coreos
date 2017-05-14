@@ -238,6 +238,10 @@ public class CmdApp {
 			cluser.check();
 		}
 	}
+	public void call(String namespace,String method,String param){
+		Object args=param;
+		this.call(namespace, method, args);
+	}
 	// 调用服务
 	public void call(String namespace,String method,Object... args){
 		ClusterMgr cluser=this.getManager();
