@@ -17,8 +17,7 @@ JPM-Command:			health
 
 -includeresource: \
 	{configuration=configuration}, \
-	{static=static}, \
-	web=web
+	{static=static}
 Conditional-Package: aQute.lib*
 -buildpath: \
 	osgi.enroute.base.api,\
