@@ -141,10 +141,13 @@ public class CoreShell {
 				status="RESOLVED";
 			}
 			if(type==Bundle.STARTING){
-				status="STARTING";
+				status="START...";
 			}
 			if(type==Bundle.STOPPING){
-				status="STOPPING";
+				status="STOP...";
+			}
+			if(type==Bundle.ACTIVE){
+				status="STARTING";
 			}
 			String name=bundle.name;
 			String version=bundle.version;

@@ -26,11 +26,13 @@ public class CheckJob{
 				while(true){
 					// ˯15s
 					try{
-						Thread.sleep(15000);
+						Thread.sleep(2000);
 					}catch(Exception e){}
 					if(finish==true){
 						finish=false;
-						cmdApp.check();
+						try{
+							cmdApp.check();
+						}catch(Exception e){}
 						finish=true;
 					}
 				}

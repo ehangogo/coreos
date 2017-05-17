@@ -142,11 +142,17 @@ public class ClusterMgr {
 			if(type==Bundle.RESOLVED){
 				status="RESOLVED";
 			}
+			// 启动中
 			if(type==Bundle.STARTING){
-				status="STARTING";
+				status="START...";
 			}
+			// 停止中
 			if(type==Bundle.STOPPING){
-				status="STOPPING";
+				status="STOP...";
+			}
+			// 启动成功
+			if(type==Bundle.ACTIVE){
+				status="STARTING";
 			}
 			String name=bundle.name;
 			String version=bundle.version;

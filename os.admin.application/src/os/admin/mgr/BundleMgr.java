@@ -141,7 +141,7 @@ public class BundleMgr {
 			this.install(location, num);
 			this.start(nameVersion);
 			
-			this.checktab.put(BundleUtil.nameVersion(bundle), num);
+			this.checktab.put(bundle.name, num);
 		// hock
 		}else{
 			// 通过nameVersion获取jar包安装路径
@@ -150,7 +150,7 @@ public class BundleMgr {
 			this.start(nameVersion);
 			
 			bundle=BundleUtil.bundleInfo(location);
-			this.checktab.put(BundleUtil.nameVersion(bundle), num);
+			this.checktab.put(bundle.name, num);
 		}
 	}
 	
@@ -356,7 +356,7 @@ public class BundleMgr {
 			List<BundleInfo> bdls=search(nameVersion,net.getBundles());
 			if(bdls.size()<=0){
 				net.call(NAMESPACE, "install", location);
-				add(nameVersion,1L);
+				add(name,1L);
 				
 				// 打印非本机安装信息
 				if(!network.equals(net)){
@@ -373,8 +373,8 @@ public class BundleMgr {
 			if(bdls.size()>0){
 				net.call(NAMESPACE, "uninstall",nameVersion);
 				String name=bdls.get(0).name;
-				String version=bdls.get(0).version;
-				add(name+":"+version,-1L);
+				//String version=bdls.get(0).version;
+				add(name,-1L);
 				
 				// 打印非本机安装信息
 				if(!network.equals(net)){
@@ -405,6 +405,22 @@ public class BundleMgr {
 	// 执行操作
 	private Bundle execute(String action,NetworkWrapper net,String nameVersion){
 		if(net!=null){
+			
+			// hock
+			List<BundleInfo> bdls=net.getBundles();
+			List<BundleInfo> targets=search(nameVersion,bdls);
+			if(targets.size()>0){
+				// hock
+				if(action.equals("start")){
+					int type=Integer.parseInt(targets.get(0).status);
+					// 如果是已启动状态则返回
+					if(type==Bundle.ACTIVE){
+						return null;
+					}
+				}
+			}
+			
+			
 			net.call(NAMESPACE,action, nameVersion);
 			// 打印非本机安装信息
 			if(!network.equals(net)){
