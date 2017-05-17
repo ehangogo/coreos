@@ -375,6 +375,13 @@ public class BundleMgr {
 				String name=bdls.get(0).name;
 				String version=bdls.get(0).version;
 				add(name+":"+version,-1L);
+				
+				// 打印非本机安装信息
+				if(!network.equals(net)){
+					DateFormat format=new SimpleDateFormat("yyyyMMdd HH:mm:ss");
+					String time=format.format(new Date());
+					out.println(String.format("[%s]->[%s:%s-%s]->[%s]->[success]",time,net.getHostInfo().ip,net.getHostInfo().port,"uninstall",nameVersion));
+				}
 			}
 		}
 	}

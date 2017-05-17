@@ -76,7 +76,7 @@ public class CoreShell {
 	}
 	public void uninstall(String nameVersion) throws BundleException {
 		Bundle bundle=coreos.uninstall(nameVersion);
-		print("unstall",bundle);
+		print("uninstall",bundle);
 	}
 	public void start(String nameVersion) throws BundleException {
 		Bundle bundle=coreos.start(nameVersion);

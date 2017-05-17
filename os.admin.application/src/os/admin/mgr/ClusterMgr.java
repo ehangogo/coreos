@@ -33,7 +33,10 @@ public class ClusterMgr {
 	public void call(String addr,String namespace,String name,Object... args){
 		Object res=this.exec(addr,namespace, name, args);
 		if(res!=null){
-			out.println("result:"+res);
+			// 如果不是测试代码返回结果,则打印
+			if(!res.toString().equals("DEBUG")){
+				out.println("result:"+res);
+			}
 		}else{
 			out.println("result:null");
 		}
@@ -41,7 +44,10 @@ public class ClusterMgr {
 	public void call(String namespace,String name,Object... args){
 		Object res=this.exec(namespace, name, args);
 		if(res!=null){
-			out.println("result:"+res);
+			// 如果不是测试代码返回结果,则打印
+			if(!res.toString().equals("DEBUG")){
+				out.println("result:"+res);
+			}
 		}else{
 			out.println("result:null");
 		}
@@ -330,7 +336,7 @@ public class ClusterMgr {
 		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
 			List res=target.call(namespace,name,args);
 			debug(target,(List<Map<String,Object>>)res);
-			return null;
+			return "DEBUG";
 		}
 		Object res=target.call(namespace,name,args);
 		return res;
@@ -341,7 +347,7 @@ public class ClusterMgr {
 		Object res=target.call(namespace,name,args);
 		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
 			debug(target,(List<Map<String,Object>>)res);
-			return null;
+			return "DEBUG";
 		}
 		return res;
 	}
