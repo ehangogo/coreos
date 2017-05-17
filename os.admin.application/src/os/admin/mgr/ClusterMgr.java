@@ -335,7 +335,7 @@ public class ClusterMgr {
 		NetworkWrapper target=this.network;
 		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
 			List res=target.call(namespace,name,args);
-			debug(target,(List<Map<String,Object>>)res);
+			debug((List<Map<String,Object>>)res);
 			return "DEBUG";
 		}
 		Object res=target.call(namespace,name,args);
@@ -346,17 +346,20 @@ public class ClusterMgr {
 		if(target==null) return null;
 		Object res=target.call(namespace,name,args);
 		if(namespace.equals("os.moudel.person.provider.PersonService")&&name.equals("list")){
-			debug(target,(List<Map<String,Object>>)res);
+			debug((List<Map<String,Object>>)res);
 			return "DEBUG";
 		}
 		return res;
 	}
 	
-	public void debug(NetworkWrapper target,List<Map<String,Object>> res){
-		HostInfo host=target.getHostInfo();
-		String ip=host.ip;
-		String port=host.port;
-		System.out.println(String.format("%s:%s->执行体脂查询->",ip,port));
+	public void debug(List<Map<String,Object>> res){
+		// 最后一条记录信息为主机IP和端口信息
+		String host=res.get(res.size()-1).get("ip:port").toString();
+		System.out.println(String.format("%s->执行体脂查询->",host));
+		// 删除最后一条信息
+		res.remove(res.size()-1);
+		
+		
 		// 获取表头信息
 		StringBuilder header=new StringBuilder();
 		if(res!=null&&res.size()>0){
